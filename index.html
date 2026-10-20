@@ -46,6 +46,7 @@ nav button:focus-visible,button:focus-visible,select:focus-visible,input:focus-v
 .group h2 .tag{font:500 12px var(--mono);color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:99px}
 .group h2 .tag.today{color:var(--done);background:var(--done-soft)}
 .task{display:grid;grid-template-columns:62px 22px 1fr;gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.rec{font:600 10.5px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--warn);background:var(--warn-soft);padding:2px 7px;border-radius:99px;vertical-align:2px;text-decoration:none;display:inline-block}
 .task.brk{background:transparent;border-style:dashed}
 .task.brk .t-title{color:var(--muted)}
 .task.done{background:var(--done-soft);border-color:transparent}
@@ -111,7 +112,7 @@ nav button:focus-visible,button:focus-visible,select:focus-visible,input:focus-v
   <section id="clients" hidden></section>
   <section id="playbooks" hidden></section>
 
-  <div class="foot">Work week Sunday–Thursday, 12:00–21:00 with a 45-minute break. Ticks reset automatically: daily every day, weekly every Sunday, monthly on the 1st. Ticks are saved in this browser only. <button class="reset" id="reset">Clear today's ticks</button></div>
+  <div class="foot">Work week Sunday–Thursday, 12:00–21:00. Tasks marked Recommended are upgrades to raise quality and client satisfaction. Ticks reset automatically: daily every day, weekly every Sunday, monthly on the 1st. Ticks are saved in this browser only. <button class="reset" id="reset">Clear today's ticks</button></div>
 </div>
 
 <script>
@@ -119,8 +120,8 @@ const MKT = ["Dr. Mohamed Sobieh","Dr. Husam El Samahy","Dr. Mahmoud Abdel Aal",
 const WEB = ["Dr. Husam El Samahy","Dr. Mahmoud Abdel Aal","Dr. Ahmed Mansour","Dr. Youssef Sarwat"];
 const SOFT = [["Hend Mohamed","LMS"],["Viola Clinic","Clinic management system"],["Luna Loofah","E-commerce store"]];
 const short = n => n.replace("Dr. ","");
-// Weekly check-in rotation: every client gets one personal touchpoint per week.
-const ROTA = {0:["Dr. Mohamed Sobieh","Dr. Husam El Samahy","Hend Mohamed"],1:["Dr. Mahmoud Abdel Aal","Dr. Thabt Shoukry","Viola Clinic"],2:["Dr. Rogina Ragy","Dr. Lobna El Didi","Luna Loofah"],3:["Dr. Ahmed Mansour","Dr. Youssef Sarwat"],4:[]};
+// Weekly check-in rotation for marketing clients. Software clients are checked in twice a month (Monthly tab).
+const ROTA = {0:["Dr. Mohamed Sobieh","Dr. Husam El Samahy"],1:["Dr. Mahmoud Abdel Aal","Dr. Thabt Shoukry"],2:["Dr. Rogina Ragy","Dr. Lobna El Didi"],3:["Dr. Ahmed Mansour","Dr. Youssef Sarwat"],4:[]};
 const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
 const now = new Date();
@@ -142,15 +143,15 @@ const save = p => store.set({day:dayKey,week:weekKey,month:monthKey}[p], state[p
 const todayRota = ROTA[dow] || [];
 const DAILY = [
   {time:"12:00",title:"Record every new lead in the CRM",note:"First thing, before anything else: every lead that came in since she left yesterday (ads, WhatsApp, Instagram, website, referrals). Name, phone, source, service interested in, and the next step with a date."},
-  {time:"12:30",title:"Confirm yesterday's and today's posts went live",note:"Open Meta Business Suite for each marketing client. Tap a name once their posts are verified. Anything missing: republish and tell the client before they notice.",chips:MKT},
-  {time:"13:00",title:"Inbox sweep: client WhatsApp groups, DMs and email",note:"Reply to every client message within 2 working hours. Log each request (edit, new post, website change) with an owner and a due date."},
+  {time:"12:30",title:"Inbox sweep: client WhatsApp groups, DMs and email",note:"Reply to every client message within 2 working hours. Log each request (edit, new post, website change) with an owner and a due date."},
+  {time:"13:00",title:"Confirm yesterday's and today's posts went live",note:"Open Meta Business Suite for each marketing client. Tap a name once their posts are verified. Anything missing: republish and tell the client before they notice.",chips:MKT},
   {time:"13:30",title:"Review everything scheduled for the next 48 hours",note:"Run the pre-publish checklist on every design, caption and reel. Nothing is scheduled without her approval."},
   {time:"14:30",title:"Scripts and shoot prep",note:"Write or refine scripts for the next videography day. Send scripts to the doctor for approval at least 3 days before the shoot."},
-  {time:"15:30",title:"Break",note:"45 minutes, until 16:15.",brk:true},
-  {time:"16:15",title: todayRota.length ? "Personal check-in with today's clients" : "No rotation calls today: use this slot for catch-up",note: todayRota.length ? "Short call or voice note: anything they're unhappy with, anything coming up (offers, events, new services). Update their status on the Clients tab." : "Weekend or Thursday. Clear open client requests instead.",chips:todayRota},
-  {time:"17:15",title:"Software clients: check for issues",note:"Any bug, question or training need from Hend (LMS), Viola Clinic (clinic system) or Luna Loofah (store)? Log it and pass technical items to the CTO before he finishes for the day.",chips:SOFT.map(s=>s[0])},
-  {time:"18:00",title:"Hiring: candidates and interviews",note:"Reply to applicants, schedule interviews, and send feedback to anyone interviewed more than 2 days ago."},
-  {time:"19:00",title:"Second inbox sweep and request follow-up",note:"Clear client messages from the afternoon. Chase the team on any request that's due today."},
+  {time:"15:30",title: todayRota.length ? "Personal check-in with today's clients" : "No rotation calls today: use this slot for catch-up",note: todayRota.length ? "Short call or voice note: anything they're unhappy with, anything coming up (offers, events, new services). Update their status on the Clients tab." : "Thursday or weekend. Clear open client requests instead.",chips:todayRota},
+  {time:"16:30",title:"Follow up leads due today",note:"Call or message every CRM lead whose next step is today. Update the next step or mark won, lost or nurturing."},
+  {time:"17:30",title:"Afternoon inbox sweep and request follow-up",note:"Clear client messages from the afternoon. Chase the team on any request that's due today."},
+  {time:"18:30",rec:true,title:"Send one client a win",note:"Pick one client and send something good: a post that did well, a strong patient comment, a lead count. Doctors who see results regularly stay longer."},
+  {time:"19:00",rec:true,title:"Save content ideas",note:"Spend 30 minutes on what similar clinics and doctors are posting in Egypt and the Gulf. Save the best ideas under each client's name for next month's plan."},
   {time:"20:00",title:"Prepare tomorrow",note:"Check tomorrow's shoots, meetings and deadlines. Send reminders to clients and the videographer for anything happening tomorrow."},
   {time:"20:30",title:"Final lead sweep",note:"Record any lead that came in during the day so nothing waits overnight."},
   {time:"20:45",title:"End-of-day update to the CEO",note:"Three lines: done today, blocked or at risk, plan for tomorrow."}
@@ -162,17 +163,19 @@ const WEEKLY = [
     {title:"Send CEO–CTO meeting reminder and agenda",note:"Collect agenda points from both, send the agenda and time at least 24 hours before the meeting."}]},
   {day:1,items:[
     {title:"Draft scripts for next week's shoots",note:"Send to each doctor for approval by Wednesday."},
-    {title:"Hiring pipeline review",note:"Open roles, number of applicants, interviews booked, decisions pending. Push any stuck candidate forward."}]},
+    {rec:true,title:"Review last week's numbers per client",note:"Which posts and reels got the most reach, messages and leads? Tell the content team what to make more of this week."}]},
   {day:2,items:[
     {title:"Website clients check",note:"Open each site on mobile: loads fast, WhatsApp/call buttons and booking forms work, no outdated info. Collect pending edit requests and send them to the CTO.",chips:WEB},
     {title:"CEO–CTO meeting: run, record, minute",note:"Remind 1 hour before, record the meeting, send minutes with action items, owners and due dates the same day."}]},
   {day:3,items:[
     {title:"CRM follow-up sweep",note:"Every lead older than 3 days without a next step gets a follow-up call or message today. Mark won, lost or nurturing."},
-    {title:"Follow up last week's meeting action items",note:"Check status of every action item from the CEO–CTO minutes and update the owners."}]},
+    {title:"Follow up last week's meeting action items",note:"Check status of every action item from the CEO–CTO minutes and update the owners."},
+    {rec:true,title:"Mystery-message one clinic",note:"Message one client's clinic as a patient would (WhatsApp or page inbox). Note how long they take to reply and how they handle it. Share the result kindly with the doctor: ads only work if the clinic answers fast. Rotate so each clinic is tested every two months."}]},
   {day:4,items:[
     {title:"Weekly client snapshot to the CEO",note:"Per client: posts published vs planned, open requests, shoots done, and status (happy, neutral, at risk) with the reason."},
     {title:"Lock next week's shoot schedule",note:"Book the videographer and send the shoot plan to each client."},
-    {title:"Archive the week",note:"Raw footage backed up, approved scripts saved in each client's folder, meeting recording filed."}]}
+    {title:"Archive the week",note:"Raw footage backed up, approved scripts saved in each client's folder, meeting recording filed."},
+    {rec:true,title:"Ask one happy client for a review or referral",note:"Pick a client marked Happy and ask for a Google review, a short video testimonial, or the name of a colleague who needs the same service."}]}
 ];
 const CLINICS = [...MKT,"Viola Clinic"];
 const MONTHLY = [
@@ -180,20 +183,24 @@ const MONTHLY = [
     {title:"Visit every client's clinic in person",note:"One visit per clinic per month. Book visits in the first week and spread them across the month; combine with a shoot day where possible. Follow the clinic visit checklist and tap the name once done.",chips:CLINICS}]},
   {when:"Days 1–5",items:[
     {title:"Send monthly performance report to each marketing client",note:"Reach, engagement, top posts, messages and leads generated, and what changes next month. Walk each doctor through it on a short call.",chips:MKT},
-    {title:"Monthly check-in with each software client",note:"How is the system being used, open issues, training needs, and anything they wish it did. Note upsell opportunities for the CEO.",chips:SOFT.map(s=>s[0])}]},
+    {title:"Software clients check-in (1 of 2)",note:"Short call: how the system is being used, open issues, training needs, and anything they wish it did. Pass technical items to the CTO and upsell ideas to the CEO.",chips:SOFT.map(s=>s[0])},
+    {rec:true,title:"Propose one new idea to each marketing client",note:"Something they haven't tried: a new reel format, a seasonal offer, a patient story, a MazCodex Studio podcast episode, or a new landing page. Clients who see us bringing ideas don't shop around.",chips:MKT}]},
   {when:"By the 15th",items:[
-    {title:"Draft next month's content plan for each client",note:"Themes, offers, occasions and reel ideas based on what performed best this month.",chips:MKT},
+    {title:"Draft next month's content plan for each client",note:"Themes, offers, occasions and reel ideas based on what performed best this month and the saved content ideas.",chips:MKT},
     {title:"Book next month's videography days",note:"Every client who needs video gets a shoot date before the month starts."}]},
   {when:"By the 20th",items:[
     {title:"Get client approval on next month's plan",note:"Written approval (WhatsApp is fine) saved for each client.",chips:MKT},
+    {title:"Software clients check-in (2 of 2)",note:"Follow up on what was raised in the first check-in. Share one feature or tip they aren't using yet.",chips:SOFT.map(s=>s[0])},
     {title:"Website clients monthly review with the CTO",note:"Updates delivered, pending requests, form submissions, and anything to propose (new pages, offers, SEO).",chips:WEB}]},
   {when:"By the 25th",items:[
-    {title:"First week of next month designed, reviewed and scheduled",note:"Every marketing client starts the month with at least 7 days already scheduled."}]},
+    {title:"First week of next month designed, reviewed and scheduled",note:"Every marketing client starts the month with at least 7 days already scheduled."},
+    {rec:true,title:"Note next month's client occasions",note:"Doctor birthdays, clinic anniversaries, national days, Ramadan and Eid campaigns. Plan a greeting or a post for each."}]},
   {when:"Last week",items:[
     {title:"Satisfaction check with every client",note:"Ask: score from 1 to 5, and one thing we could do better. Update the Clients tab and escalate any score of 3 or lower to the CEO the same day.",chips:[...MKT,...SOFT.map(s=>s[0])]},
     {title:"CRM monthly summary to the CEO",note:"New leads, sources, converted clients, and lost leads with reasons."},
-    {title:"Hiring and team needs review with the CEO",note:"Workload per team member, open roles, and new staff onboarding progress."},
-    {title:"CEO–CTO meetings: monthly action review",note:"List every action item from this month's meetings with its status: done, in progress or overdue."}]}
+    {title:"Hiring (only if there's an open role)",note:"Skip when nothing is open. If a role is open: agree it with the CEO, then run the hiring checklist and keep all interviews on one day."},
+    {title:"CEO–CTO meetings: monthly action review",note:"List every action item from this month's meetings with its status: done, in progress or overdue."},
+    {rec:true,title:"Mistakes and fixes log",note:"List every mistake caught in review or missed and published this month, and the change that stops it happening again. Share it with the team."}]}
 ];
 const PLAYBOOKS = [
   {title:"Pre-publish review",sub:"Run on every post, reel, story and ad before it's scheduled.",steps:["Spelling and grammar in Arabic and English, including diacritics where used.","Doctor's name and title written exactly as approved (Dr., Prof., specialty).","Phone numbers, WhatsApp, branch addresses and working hours are correct and current.","Prices and offers match what the client approved, with dates if limited.","No guaranteed results or exaggerated medical claims; before/after content follows Meta's policy.","Logo, brand colours and fonts match the client's identity.","Caption matches the design; hashtags and call to action included.","Scheduled on the right client page, at the right date and time."]},
@@ -215,7 +222,7 @@ function taskEl(p,id,t,label){
   const time=document.createElement("div");time.className="time";time.textContent=label||"";
   const body=document.createElement("div");body.className="t-body";
   body.innerHTML=`<label class="t-title" for="${cb.id}"></label><div class="t-note"></div>`;
-  body.querySelector(".t-title").textContent=t.title;body.querySelector(".t-note").textContent=t.note||"";
+  body.querySelector(".t-title").textContent=t.title;if(t.rec){const r=document.createElement("span");r.className="rec";r.textContent="Recommended";body.querySelector(".t-title").append(" ",r)}body.querySelector(".t-note").textContent=t.note||"";
   const chips=[];
   if(t.chips&&t.chips.length){
     const wrap=document.createElement("div");wrap.className="chips";
@@ -247,7 +254,7 @@ function group(title,tag,today){const g=document.createElement("div");g.classNam
   DAILY.forEach((t,i)=>g.appendChild(t.brk?breakEl(t):taskEl("day","d"+i,t,t.time)));sec.appendChild(g)})();
 // Weekly
 (function(){const sec=document.getElementById("weekly");
-  const p=document.createElement("p");p.className="intro";p.textContent="Fixed weekly anchors on top of the daily routine. Each client also gets one personal check-in per week on their rotation day.";sec.appendChild(p);
+  const p=document.createElement("p");p.className="intro";p.textContent="Fixed weekly anchors on top of the daily routine. Each marketing client also gets one personal check-in per week on their rotation day.";sec.appendChild(p);
   const r=group("Check-in rotation");const rl=document.createElement("div");rl.className="t-note";
   rl.innerHTML=[0,1,2,3].map(d=>`<div><b>${DAYS[d]}:</b> ${ROTA[d].join(", ")}</div>`).join("");r.appendChild(rl);sec.appendChild(r);
   WEEKLY.forEach(gw=>{const g=group(DAYS[gw.day],gw.day===dow?"Today":"",gw.day===dow);gw.items.forEach((t,i)=>g.appendChild(taskEl("week","w"+gw.day+"-"+i,t,DAYS[gw.day].slice(0,3).toUpperCase())));sec.appendChild(g)})})();
@@ -265,7 +272,7 @@ function group(title,tag,today){const g=document.createElement("div");g.classNam
   const st=store.get("clients",{});
   all.forEach((c,i)=>{const el=document.createElement("div");el.className="client";
     const day=Object.keys(ROTA).find(d=>ROTA[d].includes(c.n));
-    el.innerHTML=`<h3></h3><div class="pills">${c.s.map(x=>`<span class="pill">${x}</span>`).join("")}</div><div class="meta">Weekly check-in: ${DAYS[day]}${CLINICS.includes(c.n)?" · Clinic visit monthly":""}</div>
+    el.innerHTML=`<h3></h3><div class="pills">${c.s.map(x=>`<span class="pill">${x}</span>`).join("")}</div><div class="meta">${day!==undefined?"Weekly check-in: "+DAYS[day]:"Check-in twice a month"}${CLINICS.includes(c.n)?" · Clinic visit monthly":""}</div>
     <select id="st-${i}" aria-label="Status"><option value="">Status not set</option><option value="happy">Happy</option><option value="neutral">Neutral</option><option value="risk">At risk</option></select>
     <textarea id="nt-${i}" placeholder="Last check-in notes, open requests, next shoot date"></textarea>`;
     el.querySelector("h3").textContent=c.n;
