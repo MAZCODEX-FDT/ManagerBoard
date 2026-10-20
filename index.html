@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0;font:14px system-ui,sans-serif}[hidden]{display:none!important}</style>
+<title>MAZCODEX Account Manager Board</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a working board. Header with today's progress, tab strip, then time-blocked task rows. */
+:root{
+  --bg:#f5f6fb; --surface:#ffffff; --ink:#151831; --muted:#5d6283; --line:#dfe2ef;
+  --accent:#3f45d1; --accent-soft:#e7e8fc; --done:#1f8a5b; --done-soft:#e1f3ea; --warn:#b26a00; --warn-soft:#fdf0db; --risk:#c2384b; --risk-soft:#fbe4e7;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10121f; --surface:#191c2e; --ink:#eceefb; --muted:#9aa0c3; --line:#2b2f48;
+  --accent:#8e93ff; --accent-soft:#262a55; --done:#4fc98f; --done-soft:#173a2b; --warn:#f0a845; --warn-soft:#3a2c14; --risk:#f07a8a; --risk-soft:#3d1c23; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10121f; --surface:#191c2e; --ink:#eceefb; --muted:#9aa0c3; --line:#2b2f48;
+  --accent:#8e93ff; --accent-soft:#262a55; --done:#4fc98f; --done-soft:#173a2b; --warn:#f0a845; --warn-soft:#3a2c14; --risk:#f07a8a; --risk-soft:#3d1c23; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:960px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:22px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,5vw,40px);line-height:1.05;margin:4px 0 0;text-wrap:balance}
+.date{font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:6px}
+.meters{display:flex;gap:10px;flex-wrap:wrap}
+.meter{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:120px}
+.meter b{display:block;font-family:var(--display);font-size:22px;font-variant-numeric:tabular-nums}
+.meter span{font-size:12px;color:var(--muted)}
+.bar{height:4px;background:var(--line);border-radius:2px;margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+nav{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line)}
+nav button{font:600 14px var(--body);background:none;border:0;color:var(--muted);padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+nav button:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.intro{color:var(--muted);max-width:68ch;margin:0}
+.group{display:flex;flex-direction:column;gap:8px}
+.group h2{font-family:var(--display);font-weight:600;font-size:19px;margin:8px 0 0;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.group h2 .tag{font:500 12px var(--mono);color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:99px}
+.group h2 .tag.today{color:var(--done);background:var(--done-soft)}
+.task{display:grid;grid-template-columns:62px 22px 1fr;gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.task.brk{background:transparent;border-style:dashed}
+.task.brk .t-title{color:var(--muted)}
+.task.done{background:var(--done-soft);border-color:transparent}
+.task.done .t-title{text-decoration:line-through;text-decoration-color:var(--done);color:var(--muted)}
+.time{font:500 12px var(--mono);color:var(--muted);padding-top:3px;font-variant-numeric:tabular-nums}
+.task input[type=checkbox]{width:20px;height:20px;margin:2px 0 0;accent-color:var(--done);cursor:pointer}
+.t-body{min-width:0;display:flex;flex-direction:column;gap:4px}
+.t-title{font-weight:600}
+.t-note{color:var(--muted);font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.chip{font:500 12.5px var(--body);border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:99px;padding:4px 10px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--done);border-color:var(--done);color:var(--surface)}
+.clients{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.client{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.client h3{margin:0;font-size:16px}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{font:500 11.5px var(--body);padding:2px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+.client .meta{font-size:13px;color:var(--muted)}
+.client select{font:500 13px var(--body);padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.client.s-happy{border-left:4px solid var(--done)} .client.s-neutral{border-left:4px solid var(--warn)} .client.s-risk{border-left:4px solid var(--risk)}
+.client textarea{font:14px var(--body);border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);padding:8px;resize:vertical;min-height:56px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.pb{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.pb h2{margin:0 0 4px;font-family:var(--display);font-weight:600;font-size:19px}
+.pb p{margin:0 0 10px;color:var(--muted);font-size:14px}
+.pb ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+.pb ol li::marker{font-family:var(--mono);color:var(--accent);font-size:13px}
+.pbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:12px}
+@media (max-width:520px){.pbs{grid-template-columns:1fr}.task{grid-template-columns:22px 1fr}.time{grid-column:2;padding:0}.task input{grid-row:1/3;grid-column:1}.t-body{grid-column:2}}
+.foot{font-size:13px;color:var(--muted)}
+.reset{font:500 13px var(--body);background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 10px;cursor:pointer}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">MAZCODEX · Account Management</div>
+      <h1>Account Manager Board</h1>
+      <div class="date" id="date"></div>
+    </div>
+    <div class="meters">
+      <div class="meter"><b id="m-day">0%</b><span>Today</span><div class="bar"><i id="b-day" style="width:0"></i></div></div>
+      <div class="meter"><b id="m-week">0%</b><span>This week</span><div class="bar"><i id="b-week" style="width:0"></i></div></div>
+      <div class="meter"><b id="m-month">0%</b><span>This month</span><div class="bar"><i id="b-month" style="width:0"></i></div></div>
+    </div>
+  </header>
+
+  <nav role="tablist">
+    <button role="tab" data-tab="daily" aria-selected="true">Daily</button>
+    <button role="tab" data-tab="weekly" aria-selected="false">Weekly</button>
+    <button role="tab" data-tab="monthly" aria-selected="false">Monthly</button>
+    <button role="tab" data-tab="clients" aria-selected="false">Clients (11)</button>
+    <button role="tab" data-tab="playbooks" aria-selected="false">Checklists</button>
+  </nav>
+
+  <section id="daily"></section>
+  <section id="weekly" hidden></section>
+  <section id="monthly" hidden></section>
+  <section id="clients" hidden></section>
+  <section id="playbooks" hidden></section>
+
+  <div class="foot">Work week Sunday–Thursday, 12:00–21:00 with a 45-minute break. Ticks reset automatically: daily every day, weekly every Sunday, monthly on the 1st. Ticks are saved in this browser only. <button class="reset" id="reset">Clear today's ticks</button></div>
+</div>
+
+<script>
+const MKT = ["Dr. Mohamed Sobieh","Dr. Husam El Samahy","Dr. Mahmoud Abdel Aal","Dr. Thabt Shoukry","Dr. Rogina Ragy","Dr. Lobna El Didi","Dr. Ahmed Mansour","Dr. Youssef Sarwat"];
+const WEB = ["Dr. Husam El Samahy","Dr. Mahmoud Abdel Aal","Dr. Ahmed Mansour","Dr. Youssef Sarwat"];
+const SOFT = [["Hend Mohamed","LMS"],["Viola Clinic","Clinic management system"],["Luna Loofah","E-commerce store"]];
+const short = n => n.replace("Dr. ","");
+// Weekly check-in rotation: every client gets one personal touchpoint per week.
+const ROTA = {0:["Dr. Mohamed Sobieh","Dr. Husam El Samahy","Hend Mohamed"],1:["Dr. Mahmoud Abdel Aal","Dr. Thabt Shoukry","Viola Clinic"],2:["Dr. Rogina Ragy","Dr. Lobna El Didi","Luna Loofah"],3:["Dr. Ahmed Mansour","Dr. Youssef Sarwat"],4:[]};
+const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+const now = new Date();
+const dow = now.getDay();
+const pad = n => String(n).padStart(2,"0");
+const dayKey = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+const sun = new Date(now); sun.setDate(now.getDate()-dow);
+const weekKey = `w${sun.getFullYear()}-${pad(sun.getMonth()+1)}-${pad(sun.getDate())}`;
+const monthKey = `m${now.getFullYear()}-${pad(now.getMonth()+1)}`;
+document.getElementById("date").textContent = now.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+
+const store = {
+  get(k,d){try{const v=localStorage.getItem("amb:"+k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem("amb:"+k,JSON.stringify(v))}catch(e){}}
+};
+const state = {day:store.get(dayKey,{}),week:store.get(weekKey,{}),month:store.get(monthKey,{})};
+const save = p => store.set({day:dayKey,week:weekKey,month:monthKey}[p], state[p]);
+
+const todayRota = ROTA[dow] || [];
+const DAILY = [
+  {time:"12:00",title:"Record every new lead in the CRM",note:"First thing, before anything else: every lead that came in since she left yesterday (ads, WhatsApp, Instagram, website, referrals). Name, phone, source, service interested in, and the next step with a date."},
+  {time:"12:30",title:"Confirm yesterday's and today's posts went live",note:"Open Meta Business Suite for each marketing client. Tap a name once their posts are verified. Anything missing: republish and tell the client before they notice.",chips:MKT},
+  {time:"13:00",title:"Inbox sweep: client WhatsApp groups, DMs and email",note:"Reply to every client message within 2 working hours. Log each request (edit, new post, website change) with an owner and a due date."},
+  {time:"13:30",title:"Review everything scheduled for the next 48 hours",note:"Run the pre-publish checklist on every design, caption and reel. Nothing is scheduled without her approval."},
+  {time:"14:30",title:"Scripts and shoot prep",note:"Write or refine scripts for the next videography day. Send scripts to the doctor for approval at least 3 days before the shoot."},
+  {time:"15:30",title:"Break",note:"45 minutes, until 16:15.",brk:true},
+  {time:"16:15",title: todayRota.length ? "Personal check-in with today's clients" : "No rotation calls today: use this slot for catch-up",note: todayRota.length ? "Short call or voice note: anything they're unhappy with, anything coming up (offers, events, new services). Update their status on the Clients tab." : "Weekend or Thursday. Clear open client requests instead.",chips:todayRota},
+  {time:"17:15",title:"Software clients: check for issues",note:"Any bug, question or training need from Hend (LMS), Viola Clinic (clinic system) or Luna Loofah (store)? Log it and pass technical items to the CTO before he finishes for the day.",chips:SOFT.map(s=>s[0])},
+  {time:"18:00",title:"Hiring: candidates and interviews",note:"Reply to applicants, schedule interviews, and send feedback to anyone interviewed more than 2 days ago."},
+  {time:"19:00",title:"Second inbox sweep and request follow-up",note:"Clear client messages from the afternoon. Chase the team on any request that's due today."},
+  {time:"20:00",title:"Prepare tomorrow",note:"Check tomorrow's shoots, meetings and deadlines. Send reminders to clients and the videographer for anything happening tomorrow."},
+  {time:"20:30",title:"Final lead sweep",note:"Record any lead that came in during the day so nothing waits overnight."},
+  {time:"20:45",title:"End-of-day update to the CEO",note:"Three lines: done today, blocked or at risk, plan for tomorrow."}
+];
+const WEEKLY = [
+  {day:0,items:[
+    {title:"Plan the week for every client",note:"For each marketing client: posts planned vs ready vs scheduled for this week. Flag any client with fewer than 3 days of content scheduled."},
+    {title:"Confirm this week's videography days",note:"Date, time and location confirmed with the doctor, the videographer and the clinic. Scripts approved."},
+    {title:"Send CEO–CTO meeting reminder and agenda",note:"Collect agenda points from both, send the agenda and time at least 24 hours before the meeting."}]},
+  {day:1,items:[
+    {title:"Draft scripts for next week's shoots",note:"Send to each doctor for approval by Wednesday."},
+    {title:"Hiring pipeline review",note:"Open roles, number of applicants, interviews booked, decisions pending. Push any stuck candidate forward."}]},
+  {day:2,items:[
+    {title:"Website clients check",note:"Open each site on mobile: loads fast, WhatsApp/call buttons and booking forms work, no outdated info. Collect pending edit requests and send them to the CTO.",chips:WEB},
+    {title:"CEO–CTO meeting: run, record, minute",note:"Remind 1 hour before, record the meeting, send minutes with action items, owners and due dates the same day."}]},
+  {day:3,items:[
+    {title:"CRM follow-up sweep",note:"Every lead older than 3 days without a next step gets a follow-up call or message today. Mark won, lost or nurturing."},
+    {title:"Follow up last week's meeting action items",note:"Check status of every action item from the CEO–CTO minutes and update the owners."}]},
+  {day:4,items:[
+    {title:"Weekly client snapshot to the CEO",note:"Per client: posts published vs planned, open requests, shoots done, and status (happy, neutral, at risk) with the reason."},
+    {title:"Lock next week's shoot schedule",note:"Book the videographer and send the shoot plan to each client."},
+    {title:"Archive the week",note:"Raw footage backed up, approved scripts saved in each client's folder, meeting recording filed."}]}
+];
+const CLINICS = [...MKT,"Viola Clinic"];
+const MONTHLY = [
+  {when:"Throughout the month",items:[
+    {title:"Visit every client's clinic in person",note:"One visit per clinic per month. Book visits in the first week and spread them across the month; combine with a shoot day where possible. Follow the clinic visit checklist and tap the name once done.",chips:CLINICS}]},
+  {when:"Days 1–5",items:[
+    {title:"Send monthly performance report to each marketing client",note:"Reach, engagement, top posts, messages and leads generated, and what changes next month. Walk each doctor through it on a short call.",chips:MKT},
+    {title:"Monthly check-in with each software client",note:"How is the system being used, open issues, training needs, and anything they wish it did. Note upsell opportunities for the CEO.",chips:SOFT.map(s=>s[0])}]},
+  {when:"By the 15th",items:[
+    {title:"Draft next month's content plan for each client",note:"Themes, offers, occasions and reel ideas based on what performed best this month.",chips:MKT},
+    {title:"Book next month's videography days",note:"Every client who needs video gets a shoot date before the month starts."}]},
+  {when:"By the 20th",items:[
+    {title:"Get client approval on next month's plan",note:"Written approval (WhatsApp is fine) saved for each client.",chips:MKT},
+    {title:"Website clients monthly review with the CTO",note:"Updates delivered, pending requests, form submissions, and anything to propose (new pages, offers, SEO).",chips:WEB}]},
+  {when:"By the 25th",items:[
+    {title:"First week of next month designed, reviewed and scheduled",note:"Every marketing client starts the month with at least 7 days already scheduled."}]},
+  {when:"Last week",items:[
+    {title:"Satisfaction check with every client",note:"Ask: score from 1 to 5, and one thing we could do better. Update the Clients tab and escalate any score of 3 or lower to the CEO the same day.",chips:[...MKT,...SOFT.map(s=>s[0])]},
+    {title:"CRM monthly summary to the CEO",note:"New leads, sources, converted clients, and lost leads with reasons."},
+    {title:"Hiring and team needs review with the CEO",note:"Workload per team member, open roles, and new staff onboarding progress."},
+    {title:"CEO–CTO meetings: monthly action review",note:"List every action item from this month's meetings with its status: done, in progress or overdue."}]}
+];
+const PLAYBOOKS = [
+  {title:"Pre-publish review",sub:"Run on every post, reel, story and ad before it's scheduled.",steps:["Spelling and grammar in Arabic and English, including diacritics where used.","Doctor's name and title written exactly as approved (Dr., Prof., specialty).","Phone numbers, WhatsApp, branch addresses and working hours are correct and current.","Prices and offers match what the client approved, with dates if limited.","No guaranteed results or exaggerated medical claims; before/after content follows Meta's policy.","Logo, brand colours and fonts match the client's identity.","Caption matches the design; hashtags and call to action included.","Scheduled on the right client page, at the right date and time."]},
+  {title:"Videography day",sub:"From 3 days before the shoot to the same evening.",steps:["3 days before: script approved by the doctor; shot list written.","2 days before: confirm time, location and duration with the clinic and the videographer.","1 day before: send the doctor wardrobe guidance (solid colours, white coat if needed) and the final script.","On the day: arrive early, check the room, light and audio before the doctor sits.","Direct the doctor: short takes, eye contact with the lens, natural pace, re-record weak lines.","Capture B-roll: clinic exterior, reception, equipment, doctor with team.","Same evening: back up all footage and send selects with notes to the editor."]},
+  {title:"Monthly clinic visit",sub:"One in-person visit to every clinic each month.",steps:["Book the visit with the doctor or clinic manager at least 3 days ahead.","Bring last month's results and next month's plan to discuss face to face.","Meet the reception team: ask what patients say about the posts and ads, and how leads are handled when they call or message.","Check what's new at the clinic: services, equipment, team members, offers, prices.","Take photos and short videos of anything new for upcoming content.","Ask the doctor for a score from 1 to 5 and one thing to improve.","Same day: write notes on the client's card, update their status, and tick the visit on the Monthly tab."]},
+  {title:"New client onboarding",sub:"Complete within the first 7 days of signing.",steps:["Send the MAZCODEX Client Onboarding Form and confirm it's filled.","Collect logo, brand colours, photos, certificates and existing materials.","Get partner access to their Facebook page, Instagram and Meta Business Suite.","Create the client WhatsApp group with the team and introduce everyone.","Kick-off call: goals, target patients, services to push, things to avoid.","Deliver the first month's content plan for approval.","Book the first videography day.","Add the client to this board and to the CRM as won."]},
+  {title:"CEO–CTO meeting",sub:"Every meeting, every time.",steps:["Collect agenda points from both and send the agenda 24 hours before.","Reminder 1 hour before with the meeting link or place.","Record the full meeting.","Send minutes the same day: decisions, action items, owner and due date for each.","File the recording and minutes in the shared folder.","Follow up open action items mid-week and before the next meeting."]},
+  {title:"Hiring a new team member",sub:"From job post to first week.",steps:["Agree the role, tasks and budget with the CEO.","Post the job and share it in the right groups.","Screen CVs and shortlist within 3 days.","Schedule interviews with the CEO or CTO as needed.","Give every candidate a decision within 2 days of the interview.","Prepare the first week: accounts, tools, introductions and a first task."]}
+];
+
+const prog = {day:[0,0],week:[0,0],month:[0,0]};
+function countTask(p,id,chips){const s=state[p];if(chips&&chips.length){chips.forEach(c=>{prog[p][1]++;if(s[id+"|"+c])prog[p][0]++})}else{prog[p][1]++;if(s[id])prog[p][0]++}}
+function taskEl(p,id,t,label){
+  const s=state[p];
+  const el=document.createElement("div");el.className="task";
+  const allDone=()=>t.chips&&t.chips.length?t.chips.every(c=>s[id+"|"+c]):!!s[id];
+  const cb=document.createElement("input");cb.type="checkbox";cb.id="cb-"+p+"-"+id;cb.setAttribute("aria-label",t.title);
+  cb.checked=allDone();
+  const time=document.createElement("div");time.className="time";time.textContent=label||"";
+  const body=document.createElement("div");body.className="t-body";
+  body.innerHTML=`<label class="t-title" for="${cb.id}"></label><div class="t-note"></div>`;
+  body.querySelector(".t-title").textContent=t.title;body.querySelector(".t-note").textContent=t.note||"";
+  const chips=[];
+  if(t.chips&&t.chips.length){
+    const wrap=document.createElement("div");wrap.className="chips";
+    t.chips.forEach(c=>{const b=document.createElement("button");b.className="chip";b.textContent=short(c);b.setAttribute("aria-pressed",!!s[id+"|"+c]);
+      b.onclick=()=>{s[id+"|"+c]=!s[id+"|"+c];b.setAttribute("aria-pressed",!!s[id+"|"+c]);sync()};chips.push(b);wrap.appendChild(b)});
+    body.appendChild(wrap);
+  }
+  cb.onchange=()=>{if(t.chips&&t.chips.length){t.chips.forEach((c,i)=>{s[id+"|"+c]=cb.checked;chips[i].setAttribute("aria-pressed",cb.checked)})}else s[id]=cb.checked;sync()};
+  function sync(){cb.checked=allDone();el.classList.toggle("done",cb.checked);save(p);meters()}
+  el.classList.toggle("done",cb.checked);
+  el.append(time,cb,body);return el;
+}
+function breakEl(t){const el=document.createElement("div");el.className="task brk";el.innerHTML=`<div class="time">${t.time}</div><div></div><div class="t-body"><div class="t-title">${t.title}</div><div class="t-note">${t.note}</div></div>`;return el}
+function meters(){
+  prog.day=[0,0];prog.week=[0,0];prog.month=[0,0];
+  DAILY.forEach((t,i)=>{if(!t.brk)countTask("day","d"+i,t.chips)});
+  WEEKLY.forEach(g=>g.items.forEach((t,i)=>countTask("week","w"+g.day+"-"+i,t.chips)));
+  MONTHLY.forEach((g,gi)=>g.items.forEach((t,i)=>countTask("month","m"+gi+"-"+i,t.chips)));
+  [["day","day"],["week","week"],["month","month"]].forEach(([p,n])=>{const [a,b]=prog[p];const pct=b?Math.round(a/b*100):0;
+    document.getElementById("m-"+n).textContent=pct+"%";document.getElementById("b-"+n).style.width=pct+"%"});
+}
+function group(title,tag,today){const g=document.createElement("div");g.className="group";const h=document.createElement("h2");h.textContent=title;
+  if(tag){const s=document.createElement("span");s.className="tag"+(today?" today":"");s.textContent=tag;h.appendChild(s)}g.appendChild(h);return g}
+
+// Daily
+(function(){const sec=document.getElementById("daily");
+  const p=document.createElement("p");p.className="intro";p.textContent="The same routine every working day. Tasks with names are done one client at a time: tap each name when it's handled.";sec.appendChild(p);
+  const g=group("Today's routine", dow>4?"Weekend: optional":DAYS[dow]+" rotation: "+(todayRota.map(short).join(", ")||"none"),true);
+  DAILY.forEach((t,i)=>g.appendChild(t.brk?breakEl(t):taskEl("day","d"+i,t,t.time)));sec.appendChild(g)})();
+// Weekly
+(function(){const sec=document.getElementById("weekly");
+  const p=document.createElement("p");p.className="intro";p.textContent="Fixed weekly anchors on top of the daily routine. Each client also gets one personal check-in per week on their rotation day.";sec.appendChild(p);
+  const r=group("Check-in rotation");const rl=document.createElement("div");rl.className="t-note";
+  rl.innerHTML=[0,1,2,3].map(d=>`<div><b>${DAYS[d]}:</b> ${ROTA[d].join(", ")}</div>`).join("");r.appendChild(rl);sec.appendChild(r);
+  WEEKLY.forEach(gw=>{const g=group(DAYS[gw.day],gw.day===dow?"Today":"",gw.day===dow);gw.items.forEach((t,i)=>g.appendChild(taskEl("week","w"+gw.day+"-"+i,t,DAYS[gw.day].slice(0,3).toUpperCase())));sec.appendChild(g)})})();
+// Monthly
+(function(){const sec=document.getElementById("monthly");
+  const p=document.createElement("p");p.className="intro";p.textContent="The monthly cycle: report on this month, plan and approve next month, and check how every client feels about us.";sec.appendChild(p);
+  const d=now.getDate();const cur=d<=5?1:d<=15?2:d<=20?3:d<=25?4:5;
+  MONTHLY.forEach((gm,gi)=>{const g=group(gm.when,gi===cur?"Now":"",gi===cur);gm.items.forEach((t,i)=>g.appendChild(taskEl("month","m"+gi+"-"+i,t,"")));sec.appendChild(g)})})();
+// Clients
+(function(){const sec=document.getElementById("clients");
+  const p=document.createElement("p");p.className="intro";p.textContent="Every client she owns, what they bought, and how they're feeling. Update the status after each check-in.";sec.appendChild(p);
+  const lg=document.createElement("div");lg.className="legend";lg.innerHTML='<span><i class="dot" style="background:var(--done)"></i>Happy</span><span><i class="dot" style="background:var(--warn)"></i>Neutral</span><span><i class="dot" style="background:var(--risk)"></i>At risk</span>';sec.appendChild(lg);
+  const grid=document.createElement("div");grid.className="clients";
+  const all=[...MKT.map(n=>({n,s:["Digital marketing"].concat(WEB.includes(n)?["Website"]:[])})),...SOFT.map(([n,x])=>({n,s:[x]}))];
+  const st=store.get("clients",{});
+  all.forEach((c,i)=>{const el=document.createElement("div");el.className="client";
+    const day=Object.keys(ROTA).find(d=>ROTA[d].includes(c.n));
+    el.innerHTML=`<h3></h3><div class="pills">${c.s.map(x=>`<span class="pill">${x}</span>`).join("")}</div><div class="meta">Weekly check-in: ${DAYS[day]}${CLINICS.includes(c.n)?" · Clinic visit monthly":""}</div>
+    <select id="st-${i}" aria-label="Status"><option value="">Status not set</option><option value="happy">Happy</option><option value="neutral">Neutral</option><option value="risk">At risk</option></select>
+    <textarea id="nt-${i}" placeholder="Last check-in notes, open requests, next shoot date"></textarea>`;
+    el.querySelector("h3").textContent=c.n;
+    const sel=el.querySelector("select"),ta=el.querySelector("textarea");const v=st[c.n]||{};sel.value=v.s||"";ta.value=v.t||"";
+    const paint=()=>{el.className="client"+(sel.value?" s-"+sel.value:"")};paint();
+    const put=()=>{st[c.n]={s:sel.value,t:ta.value};store.set("clients",st);paint()};
+    sel.onchange=put;ta.oninput=put;grid.appendChild(el)});
+  sec.appendChild(grid)})();
+// Playbooks
+(function(){const sec=document.getElementById("playbooks");
+  const p=document.createElement("p");p.className="intro";p.textContent="Step-by-step checklists for the recurring jobs, so they're done the same way every time.";sec.appendChild(p);
+  const g=document.createElement("div");g.className="pbs";
+  PLAYBOOKS.forEach(pb=>{const el=document.createElement("div");el.className="pb";el.innerHTML=`<h2></h2><p></p><ol>${pb.steps.map(s=>"<li></li>").join("")}</ol>`;
+    el.querySelector("h2").textContent=pb.title;el.querySelector("p").textContent=pb.sub;el.querySelectorAll("li").forEach((li,i)=>li.textContent=pb.steps[i]);g.appendChild(el)});
+  sec.appendChild(g)})();
+
+meters();
+const tabs=[...document.querySelectorAll("nav button")];
+function show(id){tabs.forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===id));["daily","weekly","monthly","clients","playbooks"].forEach(s=>document.getElementById(s).hidden=s!==id);store.set("tab",id)}
+tabs.forEach(b=>b.onclick=()=>show(b.dataset.tab));
+const h=(location.hash||"").slice(1);show(["daily","weekly","monthly","clients","playbooks"].includes(h)?h:store.get("tab","daily"));
+document.getElementById("reset").onclick=()=>{document.querySelectorAll("#daily input[type=checkbox]").forEach(cb=>{cb.checked=false;cb.dispatchEvent(new Event("change"))})};
+</script>
+
+</body>
+</html>
