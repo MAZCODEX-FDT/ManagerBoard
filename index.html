@@ -247,7 +247,7 @@ const store = {
    Every saved key is mirrored to <DB_URL>/board/<key> as {v: json, t: time}.
    Changes from other devices stream in live; offline changes queue and send when back online.
    Per-device settings (tab, theme, template filter) stay local. */
-const DB_URL = "";
+const DB_URL = "https://mazmanagerboard-default-rtdb.europe-west1.firebasedatabase.app";
 const LOCAL_ONLY = new Set(["tab","theme","tplCat"]);
 const SYS = "mb2sys:";
 const sync = {
