@@ -1,298 +1,898 @@
 <!doctype html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<style>body{margin:0;font:14px system-ui,sans-serif}[hidden]{display:none!important}</style>
-<title>MAZCODEX Account Manager Board</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<title>بورد منار · MAZCODEX</title>
+<meta name="theme-color" content="#14162b">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@500;600;700&display=swap">
 <style>
-/* Layout: a working board. Header with today's progress, tab strip, then time-blocked task rows. */
 :root{
-  --bg:#f5f6fb; --surface:#ffffff; --ink:#151831; --muted:#5d6283; --line:#dfe2ef;
-  --accent:#3f45d1; --accent-soft:#e7e8fc; --done:#1f8a5b; --done-soft:#e1f3ea; --warn:#b26a00; --warn-soft:#fdf0db; --risk:#c2384b; --risk-soft:#fbe4e7;
-  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
-  --body:"Instrument Sans", "Segoe UI", system-ui, sans-serif;
-  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  --bg:#f3f4fa; --surface:#ffffff; --surface-2:#f8f9fd; --ink:#14162b; --muted:#5f6488; --faint:#9297b6; --line:#e1e4f0;
+  --accent:#4a4fe0; --accent-ink:#ffffff; --accent-soft:#e9eafd;
+  --done:#17885a; --done-soft:#e2f4ec; --warn:#b26a00; --warn-soft:#fdf1dc; --risk:#c43349; --risk-soft:#fce6ea;
+  --shadow:0 1px 2px rgba(20,22,43,.05),0 8px 24px -12px rgba(20,22,43,.12);
+  --display:"Readex Pro","IBM Plex Sans Arabic",system-ui,sans-serif;
+  --body:"IBM Plex Sans Arabic","Segoe UI",system-ui,sans-serif;
+  --r:14px;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#10121f; --surface:#191c2e; --ink:#eceefb; --muted:#9aa0c3; --line:#2b2f48;
-  --accent:#8e93ff; --accent-soft:#262a55; --done:#4fc98f; --done-soft:#173a2b; --warn:#f0a845; --warn-soft:#3a2c14; --risk:#f07a8a; --risk-soft:#3d1c23; color-scheme:dark}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1020; --surface:#171a2e; --surface-2:#1c2036; --ink:#eceefb; --muted:#9da2c4; --faint:#6c7196; --line:#2a2e48;
+  --accent:#8f93ff; --accent-ink:#0e1020; --accent-soft:#252957;
+  --done:#4fcb90; --done-soft:#14382a; --warn:#f2aa48; --warn-soft:#3a2b12; --risk:#f27b8c; --risk-soft:#3e1b23;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#10121f; --surface:#191c2e; --ink:#eceefb; --muted:#9aa0c3; --line:#2b2f48;
-  --accent:#8e93ff; --accent-soft:#262a55; --done:#4fc98f; --done-soft:#173a2b; --warn:#f0a845; --warn-soft:#3a2c14; --risk:#f07a8a; --risk-soft:#3d1c23; color-scheme:dark}
+  --bg:#0e1020; --surface:#171a2e; --surface-2:#1c2036; --ink:#eceefb; --muted:#9da2c4; --faint:#6c7196; --line:#2a2e48;
+  --accent:#8f93ff; --accent-ink:#0e1020; --accent-soft:#252957;
+  --done:#4fcb90; --done-soft:#14382a; --warn:#f2aa48; --warn-soft:#3a2b12; --risk:#f27b8c; --risk-soft:#3e1b23;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6); color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
-.wrap{max-width:960px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:22px}
-header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px}
-.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
-h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,5vw,40px);line-height:1.05;margin:4px 0 0;text-wrap:balance}
-.date{font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:6px}
-.meters{display:flex;gap:10px;flex-wrap:wrap}
-.meter{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:120px}
-.meter b{display:block;font-family:var(--display);font-size:22px;font-variant-numeric:tabular-nums}
-.meter span{font-size:12px;color:var(--muted)}
-.bar{height:4px;background:var(--line);border-radius:2px;margin-top:6px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
-nav{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line)}
-nav button{font:600 14px var(--body);background:none;border:0;color:var(--muted);padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
-nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
-nav button:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.intro{color:var(--muted);max-width:68ch;margin:0}
-.group{display:flex;flex-direction:column;gap:8px}
-.group h2{font-family:var(--display);font-weight:600;font-size:19px;margin:8px 0 0;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
-.group h2 .tag{font:500 12px var(--mono);color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:99px}
-.group h2 .tag.today{color:var(--done);background:var(--done-soft)}
-.task{display:grid;grid-template-columns:62px 22px 1fr;gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
-.rec{font:600 10.5px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--warn);background:var(--warn-soft);padding:2px 7px;border-radius:99px;vertical-align:2px;text-decoration:none;display:inline-block}
-.task.brk{background:transparent;border-style:dashed}
-.task.brk .t-title{color:var(--muted)}
-.task.done{background:var(--done-soft);border-color:transparent}
-.task.done .t-title{text-decoration:line-through;text-decoration-color:var(--done);color:var(--muted)}
-.time{font:500 12px var(--mono);color:var(--muted);padding-top:3px;font-variant-numeric:tabular-nums}
-.task input[type=checkbox]{width:20px;height:20px;margin:2px 0 0;accent-color:var(--done);cursor:pointer}
-.t-body{min-width:0;display:flex;flex-direction:column;gap:4px}
-.t-title{font-weight:600}
-.t-note{color:var(--muted);font-size:14px}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-.chip{font:500 12.5px var(--body);border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:99px;padding:4px 10px;cursor:pointer}
-.chip[aria-pressed="true"]{background:var(--done);border-color:var(--done);color:var(--surface)}
-.clients{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
-.client{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px}
-.client h3{margin:0;font-size:16px}
-.pills{display:flex;gap:6px;flex-wrap:wrap}
-.pill{font:500 11.5px var(--body);padding:2px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
-.client .meta{font-size:13px;color:var(--muted)}
-.client select{font:500 13px var(--body);padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
-.client.s-happy{border-left:4px solid var(--done)} .client.s-neutral{border-left:4px solid var(--warn)} .client.s-risk{border-left:4px solid var(--risk)}
-.client textarea{font:14px var(--body);border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);padding:8px;resize:vertical;min-height:56px}
-.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
-.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
-.pb{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
-.pb h2{margin:0 0 4px;font-family:var(--display);font-weight:600;font-size:19px}
-.pb p{margin:0 0 10px;color:var(--muted);font-size:14px}
-.pb ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
-.pb ol li::marker{font-family:var(--mono);color:var(--accent);font-size:13px}
-.pbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:12px}
-@media (max-width:520px){.pbs{grid-template-columns:1fr}.task{grid-template-columns:22px 1fr}.time{grid-column:2;padding:0}.task input{grid-row:1/3;grid-column:1}.t-body{grid-column:2}}
-.foot{font-size:13px;color:var(--muted)}
-.reset{font:500 13px var(--body);background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 10px;cursor:pointer}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
-</style>
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 var(--body);font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1040px;margin:0 auto;padding:24px max(16px,env(safe-area-inset-right)) 80px max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:20px}
 
+/* Header */
+.top{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-end}
+.eyebrow{font-size:12.5px;color:var(--muted);font-weight:600;letter-spacing:.02em}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,5vw,38px);line-height:1.15;margin:2px 0 0}
+.date{color:var(--muted);font-size:14px;margin-top:4px}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.saved{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--done);background:var(--done-soft);padding:5px 11px;border-radius:99px;transition:transform .2s}
+.saved.pulse{transform:scale(1.06)}
+.saved.bad{color:var(--risk);background:var(--risk-soft)}
+.saved i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.ghost{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px 11px;font-size:13px;font-weight:600;color:var(--muted)}
+.ghost:hover{color:var(--ink);border-color:var(--faint)}
+
+.meters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.meter{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px}
+.ring{--p:0;width:46px;height:46px;border-radius:50%;flex:none;display:grid;place-items:center;background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--line) 0);transition:--p .4s}
+.ring::before{content:"";width:36px;height:36px;border-radius:50%;background:var(--surface);grid-area:1/1}
+.ring b{grid-area:1/1;font:600 12px var(--display);position:relative}
+.meter.full .ring{background:conic-gradient(var(--done) 100%,var(--line) 0)}
+.meter span{display:block;font-weight:600;font-size:14px}
+.meter small{color:var(--muted);font-size:12.5px}
+
+.warnbar{background:var(--risk-soft);color:var(--risk);border-radius:var(--r);padding:12px 14px;font-weight:600;font-size:14px}
+
+/* Tabs */
+nav{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);margin:0 -16px;padding:8px 16px;border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{border:0;background:none;color:var(--muted);font-weight:600;font-size:14.5px;padding:8px 14px;border-radius:10px;white-space:nowrap;display:flex;gap:6px;align-items:center}
+.tabs button:hover{color:var(--ink);background:var(--surface)}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.tabs .count{font-size:11.5px;background:var(--accent-soft);color:var(--accent);padding:0 7px;border-radius:99px;line-height:1.6}
+.tabs button[aria-selected="true"] .count{background:var(--accent);color:var(--accent-ink)}
+
+/* Sections */
+section{display:flex;flex-direction:column;gap:14px;animation:in .25s ease}
+@keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.lead{color:var(--muted);margin:0;max-width:70ch}
+h2{font-family:var(--display);font-weight:600;font-size:20px;margin:10px 0 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+h3{font-family:var(--display);font-weight:600;font-size:16.5px;margin:0}
+.tag{font:600 12px var(--body);color:var(--accent);background:var(--accent-soft);padding:2px 10px;border-radius:99px}
+.tag.ok{color:var(--done);background:var(--done-soft)}
+.tag.warn{color:var(--warn);background:var(--warn-soft)}
+.tag.risk{color:var(--risk);background:var(--risk-soft)}
+.list{display:flex;flex-direction:column;gap:8px}
+
+/* Task card */
+.task{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);transition:background .2s,border-color .2s}
+.task.done{background:var(--done-soft);border-color:transparent;box-shadow:none}
+.task.done .t-title{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--done)}
+.check{appearance:none;-webkit-appearance:none;margin:2px 0 0;width:24px;height:24px;border-radius:8px;border:2px solid var(--faint);background:var(--surface);display:grid;place-items:center;transition:all .15s;flex:none}
+.check:hover{border-color:var(--accent)}
+.check:checked{background:var(--done);border-color:var(--done)}
+.check:checked::after{content:"";width:11px;height:6px;border:solid #fff;border-width:0 0 2.5px 2.5px;transform:rotate(-45deg) translate(-1px,-1px)}
+.t-body{min-width:0;display:flex;flex-direction:column;gap:3px}
+.t-head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.t-title{font-weight:600;cursor:pointer}
+.when{font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:1px 9px;border-radius:99px;white-space:nowrap}
+.t-note{color:var(--muted);font-size:14px}
+.stamp{font-size:12px;color:var(--done);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{border:1px solid var(--line);background:var(--surface-2);border-radius:99px;padding:3px 11px;font-size:13px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--done);border-color:var(--done);color:#fff}
+.more{border:0;background:none;color:var(--accent);font-weight:600;font-size:13px;padding:0;align-self:flex-start;margin-top:4px}
+.detail{margin-top:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px}
+.detail ol,.detail ul{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:4px}
+.mini{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.mini label{display:flex;gap:10px;align-items:flex-start;font-size:14px;cursor:pointer}
+.mini .check{width:20px;height:20px;border-radius:6px;margin-top:2px}
+.mini .check:checked::after{width:9px;height:5px}
+.mini label.on span{color:var(--muted);text-decoration:line-through}
+
+/* Forms & cards */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px}
+.form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--muted);flex:1 1 200px}
+.field input,.field select,textarea{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:14.5px;font-weight:500;color:var(--ink);width:100%}
+textarea{resize:vertical;min-height:64px}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:10px 16px;font-weight:600;font-size:14.5px}
+.btn:hover{filter:brightness(1.08)}
+.btn.sm{padding:6px 12px;font-size:13px}
+.btn.line{background:none;color:var(--accent);border:1px solid var(--accent)}
+.danger{background:none;border:0;color:var(--risk);font-weight:600;font-size:13px}
+.empty{color:var(--muted);text-align:center;padding:26px;border:1.5px dashed var(--line);border-radius:var(--r)}
+
+.case{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.case-head{padding:16px 18px;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}
+.case-head .meta{color:var(--muted);font-size:13px}
+.progress{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:8px;min-width:180px}
+.progress i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .3s}
+.case-body{padding:6px 18px 18px}
+.steps{list-style:none;margin:0;padding:0;position:relative}
+.steps::before{content:"";position:absolute;inset-block:22px 22px;inset-inline-start:11px;width:2px;background:var(--line)}
+.step{display:grid;grid-template-columns:24px 1fr;gap:14px;padding:12px 0;position:relative}
+.step .check{position:relative;z-index:1;background:var(--surface)}
+.step.done .check{background:var(--done)}
+.step .s-top{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.step .s-title{font-weight:600}
+.step.done .s-title{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--done)}
+.due{font-size:12px;font-weight:600;padding:1px 9px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+.due.late{background:var(--risk-soft);color:var(--risk)}
+.due.soon{background:var(--warn-soft);color:var(--warn)}
+.due.ok{background:var(--done-soft);color:var(--done)}
+
+.clients{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.client{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:9px;box-shadow:var(--shadow);border-inline-start:5px solid var(--line)}
+.client.s-happy{border-inline-start-color:var(--done)}.client.s-neutral{border-inline-start-color:var(--warn)}.client.s-risk{border-inline-start-color:var(--risk)}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{font-size:12px;font-weight:600;padding:1px 9px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.visits{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted)}
+.visits button{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:var(--surface-2);font-weight:700}
+.visits b{color:var(--ink);font-size:15px}
+
+.tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.tpl{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px}
+.tpl pre{margin:0;white-space:pre-wrap;font:14px/1.7 var(--body);color:var(--ink);background:var(--surface-2);border-radius:10px;padding:10px 12px;max-height:280px;overflow:auto}
+.tpl pre.code{direction:ltr;text-align:left;font-family:ui-monospace,Menlo,monospace;font-size:13px}
+.tpl-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.copy{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:4px 10px;font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap}
+.copy.ok{color:var(--done);border-color:var(--done)}
+.filter{display:flex;gap:6px;flex-wrap:wrap}
+.filter button{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:4px 12px;font-size:13px;font-weight:600;color:var(--muted)}
+.filter button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+table.kpi{width:100%;border-collapse:separate;border-spacing:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);font-size:14px}
+.kpi th,.kpi td{padding:10px 12px;text-align:start;border-bottom:1px solid var(--line);vertical-align:top}
+.kpi th{font-size:12.5px;color:var(--muted);font-weight:600;background:var(--surface-2)}
+.kpi tr:last-child td{border-bottom:0}
+.kpi td.g{font-weight:600;color:var(--accent);white-space:nowrap}
+.kpi .check{width:20px;height:20px;border-radius:6px}
+.kpi .check:checked::after{width:9px;height:5px}
+.kpi tr.hit td{background:var(--done-soft)}
+
+.timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.tl{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;color:var(--muted)}
+.tl b{display:block;font-family:var(--display);font-size:15px;color:var(--ink)}
+
+.history{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}
+.hday{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 6px;text-align:center;font-size:12px;color:var(--muted)}
+.hday b{display:block;font-size:15px;color:var(--ink)}
+.hday.full{background:var(--done-soft);border-color:transparent}
+dialog{border:0;border-radius:18px;padding:0;max-width:min(560px,92vw);width:100%;background:var(--surface);color:var(--ink);box-shadow:0 30px 80px -20px rgba(0,0,0,.45)}
+dialog::backdrop{background:rgba(10,12,25,.5);backdrop-filter:blur(2px)}
+.dlg{padding:20px;display:flex;flex-direction:column;gap:14px}
+.foot{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:16px}
+.toast{position:fixed;bottom:20px;inset-inline:0;margin:auto;width:max-content;max-width:90vw;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none;z-index:20}
+.toast.show{opacity:1;transform:none}
+@media (max-width:640px){.meters{grid-template-columns:1fr 1fr 1fr}.meter{flex-direction:column;align-items:flex-start;gap:6px;padding:10px}.meter small{display:none}.timeline{grid-template-columns:1fr 1fr}.task{padding:12px 13px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
 <div class="wrap">
-  <header>
+  <header class="top">
     <div>
       <div class="eyebrow">MAZCODEX · Account Management</div>
-      <h1>Account Manager Board</h1>
+      <h1>بورد منار</h1>
       <div class="date" id="date"></div>
     </div>
-    <div class="meters">
-      <div class="meter"><b id="m-day">0%</b><span>Today</span><div class="bar"><i id="b-day" style="width:0"></i></div></div>
-      <div class="meter"><b id="m-week">0%</b><span>This week</span><div class="bar"><i id="b-week" style="width:0"></i></div></div>
-      <div class="meter"><b id="m-month">0%</b><span>This month</span><div class="bar"><i id="b-month" style="width:0"></i></div></div>
+    <div class="tools">
+      <span class="saved" id="saved"><i></i><span id="savedTxt">محفوظ</span></span>
+      <button class="ghost" id="histBtn">السجل</button>
+      <button class="ghost" id="themeBtn">فاتح / غامق</button>
     </div>
   </header>
 
-  <nav role="tablist">
-    <button role="tab" data-tab="daily" aria-selected="true">Daily</button>
-    <button role="tab" data-tab="weekly" aria-selected="false">Weekly</button>
-    <button role="tab" data-tab="monthly" aria-selected="false">Monthly</button>
-    <button role="tab" data-tab="clients" aria-selected="false">Clients (11)</button>
-    <button role="tab" data-tab="playbooks" aria-selected="false">Checklists</button>
-  </nav>
+  <div class="warnbar" id="warn" hidden>الحفظ مش شغال في المتصفح ده (غالبًا Private / Incognito). افتحي البورد في نافذة عادية عشان التاسكات تفضل محفوظة.</div>
+
+  <div class="meters">
+    <div class="meter" id="mt-day"><div class="ring"><b>0%</b></div><div><span>النهارده</span><small id="mt-day-s"></small></div></div>
+    <div class="meter" id="mt-week"><div class="ring"><b>0%</b></div><div><span>الدوري</span><small id="mt-week-s"></small></div></div>
+    <div class="meter" id="mt-month"><div class="ring"><b>0%</b></div><div><span>الشهر</span><small id="mt-month-s"></small></div></div>
+  </div>
+
+  <nav><div class="tabs" role="tablist" id="tabs"></div></nav>
 
   <section id="daily"></section>
-  <section id="weekly" hidden></section>
+  <section id="recurring" hidden></section>
   <section id="monthly" hidden></section>
+  <section id="onboarding" hidden></section>
+  <section id="shoots" hidden></section>
   <section id="clients" hidden></section>
-  <section id="playbooks" hidden></section>
+  <section id="templates" hidden></section>
+  <section id="kpis" hidden></section>
 
-  <div class="foot">Work week Sunday–Thursday, 12:00–21:00. Tasks marked Recommended are upgrades to raise quality and client satisfaction. Ticks reset automatically: daily every day, weekly every Sunday, monthly on the 1st. Ticks are saved in this browser only. <button class="reset" id="reset">Clear today's ticks</button></div>
+  <div class="foot">
+    <span>الشيفت من 12 الضهر لـ 9 بالليل. كل علامة بتتحفظ فورًا على الجهاز ده ومش بتضيع مع الـ Refresh أو قفل المتصفح. اليومي بيبدأ من جديد كل يوم، والدوري كل أحد، والشهري أول كل شهر، والقديم بيفضل في السجل.</span>
+    <span class="row"><button class="ghost" id="exportBtn">نسخة احتياطية</button><button class="ghost" id="importBtn">استرجاع نسخة</button><input type="file" id="importFile" accept="application/json" hidden></span>
+  </div>
 </div>
 
+<dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
+<div class="toast" id="toast"></div>
+
 <script>
+/* ---------- Storage: saved instantly, survives refresh ---------- */
+const P = "mb2:";
+const store = {
+  ok: true,
+  get(k, d){ try{ const v = localStorage.getItem(P+k); return v == null ? d : JSON.parse(v); }catch(e){ this.fail(); return d; } },
+  set(k, v){ try{ localStorage.setItem(P+k, JSON.stringify(v)); markSaved(); }catch(e){ this.fail(); } },
+  del(k){ try{ localStorage.removeItem(P+k); markSaved(); }catch(e){} },
+  keys(){ try{ return Object.keys(localStorage).filter(k => k.startsWith(P)).map(k => k.slice(P.length)); }catch(e){ return []; } },
+  fail(){ if(!this.ok) return; this.ok = false; document.getElementById("warn").hidden = false; const s=document.getElementById("saved"); s.classList.add("bad"); document.getElementById("savedTxt").textContent = "مش بيتحفظ"; }
+};
+(function(){ try{ localStorage.setItem(P+"_t","1"); localStorage.removeItem(P+"_t"); }catch(e){ store.fail(); } })();
+try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
+function markSaved(){
+  const s = document.getElementById("saved"); if(!s || !store.ok) return;
+  document.getElementById("savedTxt").textContent = "اتحفظ " + fmtTime(new Date());
+  s.classList.add("pulse"); setTimeout(()=>s.classList.remove("pulse"), 200);
+}
+
+/* ---------- Helpers ---------- */
+function h(t, a, ...c){ const e = document.createElement(t); for(const [k,v] of Object.entries(a||{})){ if(k==="class") e.className=v; else if(k.startsWith("on")) e[k]=v; else if(v===true) e.setAttribute(k,""); else if(v!==false && v!=null) e.setAttribute(k,v); } c.flat(Infinity).forEach(x=>{ if(x==null||x===false) return; e.append(x.nodeType ? x : String(x)); }); return e; }
+const pad = n => String(n).padStart(2,"0");
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const LOC = "ar-EG-u-nu-latn";
+const fmtTime = d => d.toLocaleTimeString(LOC,{hour:"numeric",minute:"2-digit"});
+const fmtDay = d => d.toLocaleDateString(LOC,{weekday:"long",day:"numeric",month:"long"});
+const fmtShort = d => d.toLocaleDateString(LOC,{weekday:"short",day:"numeric",month:"short"}) + "، " + fmtTime(d);
+const HOUR = 36e5, DAY = 864e5;
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),1800); }
+async function copyText(txt, btn){
+  try{ await navigator.clipboard.writeText(txt); }catch(e){ const ta=h("textarea",{style:"position:fixed;opacity:0"}); ta.value=txt; document.body.append(ta); ta.select(); try{document.execCommand("copy")}catch(_){} ta.remove(); }
+  if(btn){ const o=btn.textContent; btn.textContent="اتنسخ ✓"; btn.classList.add("ok"); setTimeout(()=>{btn.textContent=o; btn.classList.remove("ok")},1400); }
+}
+function relDue(due, done){
+  if(done) return {cls:"ok", txt:"اتعمل " + fmtShort(new Date(done))};
+  const diff = due - Date.now(), abs = Math.abs(diff);
+  const hrs = Math.floor(abs/HOUR), mins = Math.floor((abs%HOUR)/6e4), days = Math.floor(hrs/24);
+  const span = days >= 1 ? `${days} يوم${hrs%24?` و${hrs%24} س`:""}` : hrs ? `${hrs} س${mins?` و${mins} د`:""}` : `${mins} د`;
+  if(diff < 0) return {cls:"late", txt:"متأخر " + span};
+  return {cls: diff < 3*HOUR ? "soon" : "", txt: "قبل " + fmtShort(new Date(due)) + " · فاضل " + span};
+}
+
+/* ---------- Periods ---------- */
+const now = new Date();
+const dayKey = "d:" + ymd(now);
+const sun = new Date(now); sun.setDate(now.getDate() - now.getDay());
+const weekKey = "w:" + ymd(sun);
+const monthKey = "m:" + now.getFullYear() + "-" + pad(now.getMonth()+1);
+document.getElementById("date").textContent = now.toLocaleDateString(LOC,{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+const ticks = { [dayKey]: store.get("tick:"+dayKey,{}), [weekKey]: store.get("tick:"+weekKey,{}), [monthKey]: store.get("tick:"+monthKey,{}) };
+const saveTicks = k => store.set("tick:"+k, ticks[k]);
+
+/* ---------- Clients ---------- */
 const MKT = ["Dr. Mohamed Sobieh","Dr. Husam El Samahy","Dr. Mahmoud Abdel Aal","Dr. Thabt Shoukry","Dr. Rogina Ragy","Dr. Lobna El Didi","Dr. Ahmed Mansour","Dr. Youssef Sarwat"];
 const WEB = ["Dr. Husam El Samahy","Dr. Mahmoud Abdel Aal","Dr. Ahmed Mansour","Dr. Youssef Sarwat"];
-const SOFT = [["Hend Mohamed","LMS"],["Viola Clinic","Clinic management system"],["Luna Loofah","E-commerce store"]];
-const short = n => n.replace("Dr. ","");
-// Weekly check-in rotation for marketing clients. Software clients are checked in twice a month (Monthly tab).
-const ROTA = {0:["Dr. Mohamed Sobieh","Dr. Husam El Samahy"],1:["Dr. Mahmoud Abdel Aal","Dr. Thabt Shoukry"],2:["Dr. Rogina Ragy","Dr. Lobna El Didi"],3:["Dr. Ahmed Mansour","Dr. Youssef Sarwat"],4:[]};
-const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const SOFT = [["Hend Mohamed","LMS"],["Viola Clinic","سيستم إدارة عيادة"],["Luna Loofah","متجر إلكتروني"]];
+const CLINICS = [...MKT, "Viola Clinic"];
+const short = n => n;
+let clients = store.get("clients", null);
+if(!clients){ // carry over status and notes from the old board
+  clients = {};
+  try{ const old = JSON.parse(localStorage.getItem("amb:clients")||"{}"); for(const [n,v] of Object.entries(old)) clients[n] = {status:v.s||"", notes:v.t||""}; }catch(e){}
+  store.set("clients", clients);
+}
 
-const now = new Date();
-const dow = now.getDay();
-const pad = n => String(n).padStart(2,"0");
-const dayKey = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
-const sun = new Date(now); sun.setDate(now.getDate()-dow);
-const weekKey = `w${sun.getFullYear()}-${pad(sun.getMonth()+1)}-${pad(sun.getDate())}`;
-const monthKey = `m${now.getFullYear()}-${pad(now.getMonth()+1)}`;
-document.getElementById("date").textContent = now.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-
-const store = {
-  get(k,d){try{const v=localStorage.getItem("amb:"+k);return v?JSON.parse(v):d}catch(e){return d}},
-  set(k,v){try{localStorage.setItem("amb:"+k,JSON.stringify(v))}catch(e){}}
-};
-const state = {day:store.get(dayKey,{}),week:store.get(weekKey,{}),month:store.get(monthKey,{})};
-const save = p => store.set({day:dayKey,week:weekKey,month:monthKey}[p], state[p]);
-
-const todayRota = ROTA[dow] || [];
+/* ---------- Content ---------- */
 const DAILY = [
-  {time:"12:00",title:"Record every new lead in the CRM",note:"First thing, before anything else: every lead that came in since she left yesterday (ads, WhatsApp, Instagram, website, referrals). Name, phone, source and service interested in, then assign it to sales. She records leads only; sales handles all contact."},
-  {time:"12:30",title:"Inbox sweep: client WhatsApp groups, DMs and email",note:"Reply to every client message within 2 working hours. Log each request (edit, new post, website change) with an owner and a due date."},
-  {time:"13:00",title:"Confirm yesterday's and today's posts went live",note:"Open Meta Business Suite for each marketing client. Tap a name once their posts are verified. Anything missing: republish and tell the client before they notice.",chips:MKT},
-  {time:"13:30",title:"Review everything scheduled for the next 48 hours",note:"Run the pre-publish checklist on every design, caption and reel. Nothing is scheduled without her approval."},
-  {time:"14:30",title:"Scripts and shoot prep",note:"Write or refine scripts for the next videography day. Send scripts to the doctor for approval at least 3 days before the shoot."},
-  {time:"15:30",title: todayRota.length ? "Personal check-in with today's clients" : "No rotation calls today: use this slot for catch-up",note: todayRota.length ? "Short call or voice note: anything they're unhappy with, anything coming up (offers, events, new services). Update their status on the Clients tab." : "Thursday or weekend. Clear open client requests instead.",chips:todayRota},
-  {time:"16:30",title:"Afternoon inbox sweep and request follow-up",note:"Clear client messages from the afternoon. Chase the team on any request that's due today."},
-  {time:"17:30",rec:true,title:"Send one client a win",note:"Pick one client and send something good: a post that did well, a strong patient comment, a lead count. Doctors who see results regularly stay longer."},
-  {time:"18:00",rec:true,title:"Save content ideas",note:"Spend 30 minutes on what similar clinics and doctors are posting in Egypt and the Gulf. Save the best ideas under each client's name for next month's plan."},
-  {time:"19:00",title:"Final check on tonight's and tomorrow morning's posts",note:"Open each scheduled post once more: right page, right time, approved version. Evening is when most clinic posts go out."},
-  {time:"20:00",title:"Prepare tomorrow",note:"Check tomorrow's shoots, meetings and deadlines. Send reminders to clients and the videographer for anything happening tomorrow."},
-  {time:"20:30",title:"Final lead sweep",note:"Record and assign to sales any lead that came in during the day, so nothing waits overnight."},
-  {time:"20:45",title:"End-of-day update to the CEO",note:"Three lines: done today, blocked or at risk, plan for tomorrow."}
+  {id:"d-phone", when:"12:00", title:"حمل موبايل الشغل والواتساب والرد السريع", note:"الموبايل يفضل علطول مفتوح وفي إيدك، ورسايل الصبح كلها تترد أول ما الشيفت يبدأ. أي رسالة عميل يترد عليها خلال 5 دقايق. لو الإجابة مش جاهزة: \"تمام يا دكتور هراجع مع التيم، وهرجعلك في خلال ساعتين\"."},
+  {id:"d-calendar", when:"12:30", title:"متابعة الكونتنت كالندر ومواعيد النشر", note:"بوستات النهارده اتنشرت فعلًا؟ بوستات بكرة جاهزة ومتوافق عليها ومتجدولة؟ علّمي على كل عميل بعد ما تتأكدي.", chips:MKT},
+  {id:"d-deadlines", when:"13:30", title:"التأكد إن الشغل بيتسلم في الـ Deadline", note:"تراجعي البورد: كل تاسك ليه مسؤول وديدلاين. اللي فاضل عليه يومين تسألي عليه. اللي هيتأخر يتبلغ للعميل بميعاد جديد قبل ما الميعاد يفوت، مش بعده."},
+  {id:"d-contact", when:"طول اليوم", title:"التواصل الأساسي مع العملاء", note:"قناة رسمية واحدة لكل عميل (جروب واتساب)، وكل مكالمة يتبعت بعدها رسالة ملخص على الجروب.", tpl:"t-summary"},
+  {id:"d-content", when:"طول اليوم", title:"جمع المحتوى والصور والبيانات من العميل", note:"تبعتي للعميل قائمة محددة باللي ناقص وميعاد تسليم، وتفكّريه بعد يومين. اللي يوصل يتحفظ فورًا في فولدر العميل على الدرايف.", tpl:"t-request"},
+  {id:"d-approval", when:"طول اليوم", title:"إرسال الشغل للعميل وأخد الـ Approval", note:"الشغل يتبعت مجمّع مش بوست بوست، مع سؤال واضح: \"هل الشغل Approved ولا في تعديلات؟\" وميعاد للرد.", tpl:"t-approval"},
+  {id:"d-revisions", when:"طول اليوم", title:"تنظيم التعديلات والالتزام بعددها", note:"تعديلات العميل تتجمع في رسالة واحدة مرقّمة وتتحول Brief للفريق. تعدّي جولات التعديل، وتنبهي العميل بطريقة لطيفة لما يقرب من الحد المتفق عليه.", tpl:"t-limit"},
+  {id:"d-complaints", when:"طول اليوم", title:"متابعة رضا العملاء والشكاوى", note:"أي شكوى تترد في نفس اليوم: اعتذار، السبب، الحل، والميعاد. الشكاوى الكبيرة تتبلغ للإدارة فورًا.", tpl:"t-complaint"},
+  {id:"d-agreements", when:"بعد كل اتفاق", title:"توثيق الاتفاقات مع العملاء", note:"رسالة مكتوبة للعميل فيها اللي اتفقنا عليه، والمطلوب من كل طرف، والمواعيد. تتحفظ على الـ CRM."},
+  {id:"d-crm", when:"20:30", title:"تسجيل التعديلات والطلبات على الـ CRM", note:"قبل نهاية اليوم كل طلب أو تعديل النهارده يتسجل بتاريخه وحالته. القاعدة: اللي مش متسجل كأنه محصلش."}
 ];
-const WEEKLY = [
-  {day:0,items:[
-    {title:"Plan the week for every client",note:"For each marketing client: posts planned vs ready vs scheduled for this week. Flag any client with fewer than 3 days of content scheduled."},
-    {title:"Confirm this week's videography days",note:"Date, time and location confirmed with the doctor, the videographer and the clinic. Scripts approved."},
-    {title:"Plan this week's CEO–CTO meeting",note:"Agree the day and time with both, collect their agenda points, and send the agenda and time at least 24 hours before."}]},
-  {day:1,items:[
-    {title:"Draft scripts for next week's shoots",note:"Send to each doctor for approval by Wednesday."},
-    {rec:true,title:"Review last week's numbers per client",note:"Which posts and reels got the most reach, messages and leads? Tell the content team what to make more of this week."}]},
-  {day:2,items:[
-    {title:"Website clients check",note:"Open each site on mobile: loads fast, WhatsApp/call buttons and booking forms work, no outdated info. Collect pending edit requests and send them to the CTO.",chips:WEB},
-    {title:"CEO–CTO meeting: remind and record",note:"Remind both 1 hour before. Start the recording when the meeting begins (she doesn't attend), then file the recording in the shared folder the same day."}]},
-  {day:3,items:[
-    {rec:true,title:"Mystery-message one clinic",note:"Message one client's clinic as a patient would (WhatsApp or page inbox). Note how long they take to reply and how they handle it. Share the result kindly with the doctor: ads only work if the clinic answers fast. Rotate so each clinic is tested every two months."}]},
-  {day:4,items:[
-    {title:"Weekly client snapshot to the CEO",note:"Per client: posts published vs planned, open requests, shoots done, and status (happy, neutral, at risk) with the reason."},
-    {title:"Lock next week's shoot schedule",note:"Book the videographer and send the shoot plan to each client."},
-    {title:"Archive the week",note:"Raw footage backed up, approved scripts saved in each client's folder, meeting recording filed."},
-    {rec:true,title:"Ask one happy client for a review or referral",note:"Pick a client marked Happy and ask for a Google review, a short video testimonial, or the name of a colleague who needs the same service."}]}
+const RECURRING = [
+  {id:"r-brief", title:"كتابة الـ Brief للفريق", note:"Template ثابت لكل Brief: الهدف، الجمهور، الرسالة الأساسية، المقاسات، المراجع، الديدلاين. كل Brief يتسلم للفريق بوقت كافي قبل الديدلاين.", tpl:"t-brief"},
+  {id:"r-competitors", title:"متابعة المنافسين والترندات", note:"3 منافسين ثابتين لكل عميل: بيعملوا إيه وإيه اللي نجح معاهم. ترندات الريلز والتيك توك. تكتبي 3 أفكار جديدة لكل عميل في ملف الأفكار.", chips:MKT},
+  {id:"r-testing", title:"Website User Testing", note:"Checklist ثابتة: موبايل وديسكتوب، كل الصفحات، الفورمز بتبعت، زرار الواتساب والاتصال، السرعة، العربي والإنجليزي، اللينكات. كل مشكلة تتبعت للديفلوبر بسكرين شوت. إجباري قبل تسليم أي موقع.", tpl:"t-testing"},
+  {id:"r-maintenance", title:"متابعة صيانة مواقع العملاء", note:"تفتحي كل موقع شغال: شغال؟ الـ SSL تمام؟ الفورمز بتوصل؟ وتجمعي طلبات تحديث المحتوى أو الأسعار وتبعتيها للديفلوبر بميعاد.", chips:WEB},
+  {id:"r-access", title:"قائمة صلاحيات وحسابات العملاء", note:"شيت واحد: العميل، المنصة، نوع الأكسس، مين معاه الأكسس. يتراجع كل أسبوع. الباسوردات في Password Manager مش في الشيت.", tpl:"t-access"},
+  {id:"r-archive", title:"أرشفة ملفات العملاء على الدرايف", note:"هيكل فولدرات ثابت لكل عميل، وتسمية الملفات: اسم العميل_النوع_الموضوع_التاريخ_رقم النسخة.", tpl:"t-folders"},
+  {id:"r-sync", title:"مراجعة نظام الملفات على اللابتوبين والدرايف", note:"اللابتوبين والدرايف متطابقين، وأي ملف نهائي ناقص يتنقل للدرايف. مفيش ملفات على الـ Desktop أو في Downloads."}
 ];
-const CLINICS = [...MKT,"Viola Clinic"];
 const MONTHLY = [
-  {when:"Throughout the month",items:[
-    {title:"Visit every client's clinic in person",note:"One visit per clinic per month. Book visits in the first week and spread them across the month; combine with a shoot day where possible. Follow the clinic visit checklist and tap the name once done.",chips:CLINICS}]},
-  {when:"Days 1–5",items:[
-    {title:"Send monthly performance report to each marketing client",note:"Reach, engagement, top posts, messages and leads generated, and what changes next month. Walk each doctor through it on a short call.",chips:MKT},
-    {title:"Software clients check-in (1 of 2)",note:"Short call: how the system is being used, open issues, training needs, and anything they wish it did. Pass technical items to the CTO and upsell ideas to the CEO.",chips:SOFT.map(s=>s[0])},
-    {rec:true,title:"Propose one new idea to each marketing client",note:"Something they haven't tried: a new reel format, a seasonal offer, a patient story, a MazCodex Studio podcast episode, or a new landing page. Clients who see us bringing ideas don't shop around.",chips:MKT}]},
-  {when:"By the 15th",items:[
-    {title:"Draft next month's content plan for each client",note:"Themes, offers, occasions and reel ideas based on what performed best this month and the saved content ideas.",chips:MKT},
-    {title:"Book next month's videography days",note:"Every client who needs video gets a shoot date before the month starts."}]},
-  {when:"By the 20th",items:[
-    {title:"Get client approval on next month's plan",note:"Written approval (WhatsApp is fine) saved for each client.",chips:MKT},
-    {title:"Software clients check-in (2 of 2)",note:"Follow up on what was raised in the first check-in. Share one feature or tip they aren't using yet.",chips:SOFT.map(s=>s[0])},
-    {title:"Website clients monthly review with the CTO",note:"Updates delivered, pending requests, form submissions, and anything to propose (new pages, offers, SEO).",chips:WEB}]},
-  {when:"By the 25th",items:[
-    {title:"First week of next month designed, reviewed and scheduled",note:"Every marketing client starts the month with at least 7 days already scheduled."},
-    {rec:true,title:"Note next month's client occasions",note:"Doctor birthdays, clinic anniversaries, national days, Ramadan and Eid campaigns. Plan a greeting or a post for each."}]},
-  {when:"Last week",items:[
-    {title:"Satisfaction check with every client",note:"Ask: score from 1 to 5, and one thing we could do better. Update the Clients tab and escalate any score of 3 or lower to the CEO the same day.",chips:[...MKT,...SOFT.map(s=>s[0])]},
-    {title:"Leads recorded this month",note:"Count of leads recorded in the CRM by source, shared with the CEO and sales. Flag any source that dropped sharply."},
-    {title:"Hiring (only if there's an open role)",note:"Skip when nothing is open. If a role is open: agree it with the CEO, then run the hiring checklist and keep all interviews on one day."},
-    {rec:true,title:"Mistakes and fixes log",note:"List every mistake caught in review or missed and published this month, and the change that stops it happening again. Share it with the team."}]}
-];
-const PLAYBOOKS = [
-  {title:"Pre-publish review",sub:"Run on every post, reel, story and ad before it's scheduled.",steps:["Spelling and grammar in Arabic and English, including diacritics where used.","Doctor's name and title written exactly as approved (Dr., Prof., specialty).","Phone numbers, WhatsApp, branch addresses and working hours are correct and current.","Prices and offers match what the client approved, with dates if limited.","No guaranteed results or exaggerated medical claims; before/after content follows Meta's policy.","Logo, brand colours and fonts match the client's identity.","Caption matches the design; hashtags and call to action included.","Scheduled on the right client page, at the right date and time."]},
-  {title:"Videography day",sub:"From 3 days before the shoot to the same evening.",steps:["3 days before: script approved by the doctor; shot list written.","2 days before: confirm time, location and duration with the clinic and the videographer.","1 day before: send the doctor wardrobe guidance (solid colours, white coat if needed) and the final script.","On the day: arrive early, check the room, light and audio before the doctor sits.","Direct the doctor: short takes, eye contact with the lens, natural pace, re-record weak lines.","Capture B-roll: clinic exterior, reception, equipment, doctor with team.","Same evening: back up all footage and send selects with notes to the editor."]},
-  {title:"Monthly clinic visit",sub:"One in-person visit to every clinic each month.",steps:["Book the visit with the doctor or clinic manager at least 3 days ahead.","Bring last month's results and next month's plan to discuss face to face.","Meet the reception team: ask what patients say about the posts and ads, and how leads are handled when they call or message.","Check what's new at the clinic: services, equipment, team members, offers, prices.","Take photos and short videos of anything new for upcoming content.","Ask the doctor for a score from 1 to 5 and one thing to improve.","Same day: write notes on the client's card, update their status, and tick the visit on the Monthly tab."]},
-  {title:"New client onboarding",sub:"Complete within the first 7 days of signing.",steps:["Send the MAZCODEX Client Onboarding Form and confirm it's filled.","Collect logo, brand colours, photos, certificates and existing materials.","Get partner access to their Facebook page, Instagram and Meta Business Suite.","Create the client WhatsApp group with the team and introduce everyone.","Kick-off call: goals, target patients, services to push, things to avoid.","Deliver the first month's content plan for approval.","Book the first videography day.","Add the client to this board."]},
-  {title:"CEO–CTO meeting",sub:"She plans, reminds and records. She doesn't attend or take notes.",steps:["Agree the day and time with the CEO and CTO and add it to both calendars.","Collect agenda points from both and send the agenda 24 hours before.","Reminder 1 hour before with the meeting link or place.","Start the recording when the meeting begins and confirm it's running.","After the meeting, file the recording in the shared folder, named by date.","Ask both if a follow-up meeting is needed and schedule it."]},
-  {title:"Hiring a new team member",sub:"From job post to first week.",steps:["Agree the role, tasks and budget with the CEO.","Post the job and share it in the right groups.","Screen CVs and shortlist within 3 days.","Schedule interviews with the CEO or CTO as needed.","Give every candidate a decision within 2 days of the interview.","Prepare the first week: accounts, tools, introductions and a first task."]}
+  {id:"m-reports", when:"أول 3 أيام", title:"تجهيز تقارير الأداء وشرحها للعميل", note:"أرقام الشهر مقارنة بالشهر اللي فات، أحسن 3 بوستات، نتايج الإعلانات (عدد الرسائل وتكلفة الرسالة)، و3 توصيات. يتشرح للعميل بلغة بسيطة مش أرقام بس.", chips:MKT, tpl:"t-report"},
+  {id:"m-survey", when:"بعد التقرير", title:"استبيان الرضا الشهري", note:"سؤالين بس على الجروب، والنتيجة تتسجل في كارت العميل.", chips:[...MKT,...SOFT.map(s=>s[0])], tpl:"t-survey"},
+  {id:"m-meeting", when:"الأسبوع الأول والتاني", title:"اجتماع شهري مع كل عميل", note:"أجندة ثابتة: نتايج الشهر، خطة الشهر الجاي، طلبات العميل. عملاء العيادات: زيارة مرتين في الشهر أول 3 شهور وبعد كده مرة في الشهر (عدّاد الزيارات في تاب العملاء). عملاء السوفتوير: متابعة مرة في الشهر بالكتير.", chips:[...MKT,...SOFT.map(s=>s[0])], tpl:"t-agenda"},
+  {id:"m-goals", when:"مع الاجتماع", title:"فهم أهداف كل عميل وجمهوره", note:"تحدّثي ملف العميل: الخدمات اللي عايز يركز عليها، العروض، الجمهور، المواسم الجاية."},
+  {id:"m-upsell", when:"مع الاجتماع", title:"اقتراح خدمات إضافية (Upselling)", note:"من التقرير والاجتماع تلاحظي احتياج حقيقي، وتقترحي خدمة واحدة بس مع سببها ونتيجتها المتوقعة."},
+  {id:"m-renewals", when:"أول الشهر", title:"متابعة تجديد الدومينات والاستضافة والباقات", note:"شيت بمواعيد التجديد. تنبيه للعميل قبلها بـ 30 يوم وبعدين قبلها بـ 7 أيام، وتأكيد الدفع والتجديد.", tpl:"t-renew30"}
 ];
 
-const prog = {day:[0,0],week:[0,0],month:[0,0]};
-function countTask(p,id,chips){const s=state[p];if(chips&&chips.length){chips.forEach(c=>{prog[p][1]++;if(s[id+"|"+c])prog[p][0]++})}else{prog[p][1]++;if(s[id])prog[p][0]++}}
-function taskEl(p,id,t,label){
-  const s=state[p];
-  const el=document.createElement("div");el.className="task";
-  const allDone=()=>t.chips&&t.chips.length?t.chips.every(c=>s[id+"|"+c]):!!s[id];
-  const cb=document.createElement("input");cb.type="checkbox";cb.id="cb-"+p+"-"+id;cb.setAttribute("aria-label",t.title);
-  cb.checked=allDone();
-  const time=document.createElement("div");time.className="time";time.textContent=label||"";
-  const body=document.createElement("div");body.className="t-body";
-  body.innerHTML=`<label class="t-title" for="${cb.id}"></label><div class="t-note"></div>`;
-  body.querySelector(".t-title").textContent=t.title;if(t.rec){const r=document.createElement("span");r.className="rec";r.textContent="Recommended";body.querySelector(".t-title").append(" ",r)}body.querySelector(".t-note").textContent=t.note||"";
-  const chips=[];
-  if(t.chips&&t.chips.length){
-    const wrap=document.createElement("div");wrap.className="chips";
-    t.chips.forEach(c=>{const b=document.createElement("button");b.className="chip";b.textContent=short(c);b.setAttribute("aria-pressed",!!s[id+"|"+c]);
-      b.onclick=()=>{s[id+"|"+c]=!s[id+"|"+c];b.setAttribute("aria-pressed",!!s[id+"|"+c]);sync()};chips.push(b);wrap.appendChild(b)});
-    body.appendChild(wrap);
+/* ---------- Templates ---------- */
+const SCRIPT = `الأسلوب: Elite But Friendly. نبرة هادية وواثقة وابتسامة في الصوت. "يا دكتور" و"حضرتك" دايمًا، من غير رسميات تقيلة ولا هزار زيادة.
+
+1. الافتتاح (دقيقة)
+مساء الخير يا دكتور [الاسم]، معاك منار من MAZCODEX، وأنا الأكونت مانجر المسؤولة عن حساب حضرتك. أولًا Welcome to MAZCODEX، وإحنا متحمسين جدًا للشغل مع حضرتك. هاخد ربع ساعة بس عشان نرتب البداية بشكل يريّح حضرتك. الوقت مناسب دلوقتي؟
+
+2. دورها وطريقة الشغل (3 دقايق)
+إن شاء الله أنا هكون نقطة التواصل لحضرتك مع الفريق كله: المحتوى، والتصوير، والموقع، والتقارير. يعني حضرتك مش هتحتاج تتابع مع أكتر من شخص؛ أي حاجة تقولهالي، وأنا أتابعها لحد ما تخلص.
+هعمل دلوقتي جروب واتساب خاص بيك، وهيكون فيه كمان م. مازن وم. هاجر من الإدارة، عشان حضرتك تكون على تواصل مباشر مع الإدارة في أي وقت.
+مواعيدنا من 12 الضهر لـ 9 بالليل، وأي رسالة هتلاقي ردها في دقايق.
+
+3. نتعرف على الدكتور (5 دقايق)
+قبل ما نبدأ، حابة أفهم منك كام حاجة، عشان الشغل يطلع مناسب للـ Goal فعلًا:
+- إيه الخدمة أو العملية اللي حضرتك فخور بيها أكتر، وعايز الناس تعرفك بيها؟
+- في حاجة حضرتك مش حابب تظهر على الصفحات، سواء كلام أو أسلوب أو صور؟
+- مين في العيادة نتواصل معاه في المواعيد والتفاصيل اليومية؟
+(اسمعي كويس واكتبي، وبعد كل إجابة لخّصيها: "تمام، يعني الأولوية عندنا [...]")
+
+4. لمحة من الاستراتيجية (دقيقتين)
+بعد اللي حضرتك قلته، أحب أطمنك إن فريقنا بدأ فعلًا يشتغل على خطة حساب حضرتك. الفكرة الأساسية إننا هنركز على [مقتطف 1 من م. هاجر]، وهنبدأ بـ [مقتطف 2]. والتفاصيل الكاملة هنعرضها على حضرتك بعد ما نجمع الداتا في الزيارة.
+(جملة أو اتنين بس، من غير أرقام أو وعود جديدة. لو سأل عن تفاصيل: "دي بالظبط اللي هنعرضها على حضرتك بعد الزيارة")
+
+5. ميعاد الزيارة (دقيقتين)
+الخطوة الجاية إني أزور حضرتك في العيادة، أتعرف على المكان والفريق على الطبيعة، وناخد الداتا والأكسس سوا في أقل من ساعة. حابين نبدأ بسرعة، فيناسب حضرتك [اليوم] الساعة [الوقت]، ولا [اليوم] الساعة [الوقت] أفضل؟
+(الاختيارين لازم يكونوا خلال 48 ساعة من التعاقد)
+
+6. التجهيز للزيارة (دقيقة)
+عشان نستفيد من الميتنج لأقصى درجة، هبعت لحضرتك على الجروب ليستة قصيرة باللي محتاجينه. أهم حاجة يكون معاك وقتها الموبايل أو اللابتوب اللي عليه أكونتات الصفحات، والباقي هنكمله سوا.
+
+7. الختام (دقيقة)
+كده رتبنا كل حاجة يا دكتور. الجروب هيوصلك في خلال دقايق، ومعاه ملخص اللي اتفقنا عليه. حضرتك في إيد أمينة، وأنا موجودة لأي حاجة تحتاجها. نتقابل يوم [اليوم] إن شاء الله.`;
+const WELCOME = `أهلًا وسهلًا بحضرتك يا دكتور [الاسم] في MAZCODEX
+
+سعداء جدًا بالشغل مع حضرتك، والجروب ده هيكون مكان التواصل الرسمي بينا: المحتوى، التصوير، الموافقات، والتقارير.
+
+فريق MAZCODEX في الجروب:
+- منار — الأكونت مانجر ونقطة التواصل الأساسية
+- م. مازن
+- م. هاجر
+- Info — للدعم والمتابعة
+
+مواعيد الشغل: من 12 الضهر لـ 9 بالليل.
+
+ميعاد الميتنج: يوم [اليوم] الموافق [التاريخ] الساعة [الوقت] في [العنوان].
+
+يا ريت قبل الزيارة نكون مجهزين:
+1. اللوجو بجودة عالية (ولو في Brand Guidelines)
+2. صور العيادة والفريق والأجهزة
+3. صور الشهادات والعضويات
+4. قائمة الخدمات والعمليات والأسعار
+5. عناوين الفروع ولوكيشن ومواعيد كل فرع
+6. أرقام الحجز والواتساب
+7. الموبايل اللي عليه أكونتات فيسبوك وإنستجرام والواتساب
+
+منتظرين نبدأ رحلة نجاح مع حضرتك`;
+const VISIT_LIST = ["الاسم بالعربي والإنجليزي، والتخصص، والألقاب العلمية","نبذة عن الدكتور وسنين الخبرة","اللوجو والـ Brand Guidelines (لو موجودة)","صور الشهادات والعضويات","الخدمات والعمليات والأسعار، وأهم 3 خدمات للتركيز عليها","الفروع: العنوان، اللوكيشن، المواعيد، أرقام الحجز والواتساب","صور العيادة والفريق والأجهزة (أو تصويرهم في الزيارة)","الجمهور المستهدف: السن، المنطقة، المستوى","المنافسين اللي الدكتور شايفهم","ممنوعات الدكتور: كلام أو صور مش عايزها تتنشر","أكسس فيسبوك وإنستجرام (Business Manager)","تحديد ميعاد التصوير خلال 72 ساعة بحد أقصى","تأكيد الشخص المسؤول للتواصل في العيادة"];
+const REVIEW_LIST = ["الـ Hook في أول 3 ثواني واضح ويشد","الفيديو ماشي مع السكريبت المتوافق عليه، ومفيش جزء مهم اتشال","مفيش أي معلومة طبية غلط أو اتقطعت بشكل يغير معناها","الصوت واضح ومستواه ثابت، والمزيكا مش عالية على الكلام","الكابشنز مطابقة للكلام ومفيهاش أخطاء إملائية","الكابشنز والعناصر بعيدة عن أماكن أزرار إنستجرام وتيك توك","ألوان وخطوط ولوجو البراند صح","مفيش لقطات مهزوزة أو مضلمة أو قطع مفاجئ","المقاس صح (9:16 للريلز) والمدة في الحدود المتفق عليها","الـ CTA في الآخر واضح (رقم، لوكيشن، أو احجز الآن)","اسم الملف حسب نظام التسمية"];
+const FOOTAGE = ["بعد التصوير مباشرة: الكارت يفضل مع منار، ميتسلمش لحد تاني.","توصّل الكارت بلابتوب الشركة، وتعمل فولدر بالتصوير ده جوه فولدر العميل (مثال: Dr-Husam / 04_Monthly / 2026-11 / 02_Raw-Footage / Shoot-01_2026-11-03).","تنسخ كل الملفات (Copy مش Cut) من الكارت للفولدر ده.","تراجع النقل: عدد الملفات وحجم الفولدر = اللي على الكارت، وتفتح 3 فيديوهات عشوائية (أول، نص، آخر).","تطلّع الكارت بـ Eject، وتوصّله بلابتوب المونتير، وتنسخ من الكارت مباشرة لفولدر بنفس الاسم عنده.","تراجع النسخة التانية بنفس الطريقة.","تبعت للمونتير الـ Shot List والسكريبتات وملاحظات التصوير وميعاد أول نسخة.","بعد ما النسختين يتأكدوا بس: Format للكارت من الكاميرا.","تسجل على الـ CRM: تاريخ النقل، عدد الملفات، الحجم، واتسلم للمونتير."];
+const CANON = `فورمات الكارت من كاميرا كانون:
+1. اتأكدي إن الفوتيج اتنقل ومتراجع على اللابتوبين.
+2. ركّبي الكارت في الكاميرا وشغليها، واتأكدي إن البطارية مش ضعيفة.
+3. اضغطي MENU.
+4. روحي على تاب الإعدادات الأصفر اللي عليه علامة المفتاح.
+5. اختاري Format card. لو الكاميرا فيها مكانين للكروت، اختاري الكارت الصح (Card 1 أو Card 2).
+6. اضغطي OK واستني لحد ما يخلص. متطفيش الكاميرا ومتطلعيش الكارت وهو بيعمل فورمات.
+7. اتأكدي إن الكارت فاضي: لما تدوسي Playback تظهر رسالة إن مفيش صور.
+لو ظهر اختيار Low level format، ممكن يتعمل مرة كل كام شهر.
+
+ليه من الكاميرا مش من اللابتوب:
+- نظام الملفات: اللابتوب ممكن يعمل الكارت بنظام ملفات الكاميرا مش بتقرأه (NTFS أو APFS).
+- فولدرات الكاميرا: زي DCIM. لو اتمسحت من اللابتوب ممكن تظهر Card Error.
+- المساحة: المسح من اللابتوب، وبالذات الماك، بيسيب Trash مخفي على الكارت.
+- أمان التسجيل: فورمات الكاميرا بيقلل احتمال إن التسجيل يقف فجأة أو فيديو يبوظ.
+
+الكارت 64GB: بيكفي حوالي ساعة 4K أو من 2 لـ 4 ساعات Full HD. لو التصوير أطول، يتجهز كارت احتياطي.`;
+const TEMPLATES = [
+  {id:"t-script", cat:"الأونبوردنج", title:"سكريبت الإنترو كول", text:SCRIPT},
+  {id:"t-welcome", cat:"الأونبوردنج", title:"رسالة الترحيب في الجروب", text:WELCOME},
+  {id:"t-handover", cat:"الأونبوردنج", title:"ملخص التسليم من حبيبة", text:`العميل والتخصص:
+تاريخ التعاقد:
+البيعة جت إزاي (إعلان / ترشيح من مين / تواصل مباشر / عميل قديم):
+إيه اللي أقنع العميل:
+الباقة والخدمات المتفق عليها:
+السعر وطريقة الدفع:
+الوعود اللي اتقالت للعميل (كل وعد في سطر، بالظبط زي ما اتقال):
+توقعات العميل وأهدافه:
+شخصية العميل وطريقة التعامل المفضلة:
+مخاوف أو تجارب سيئة قبل كده:
+أي حاجة ممنوع نتكلم فيها:
+ملاحظات م. هاجر:
+المقتطفات اللي هتتقال في الإنترو كول (جملة أو اتنين):`},
+  {id:"t-group", cat:"الأونبوردنج", title:"اسم الجروب والأعضاء", text:`اسم الجروب: Dr. الاسم الأول + اسم العيلة -- MAZCODEX
+مثال: Dr. Ahmed Hassan -- MAZCODEX
+صورة الجروب: لوجو العميل
+
+الأعضاء:
+- العميل (ومساعده لو طلب)
+- رقم البيزنس بتاع منار
+- رقم Info (يتعمل أدمن)
+- رقم م. مازن البيزنس
+- رقم م. هاجر`},
+  {id:"t-brief", cat:"قوالب الشغل", title:"قالب الـ Brief", text:`العميل:
+نوع الشغل (بوست / ريل / ستوري / صفحة موقع / إعلان):
+الهدف (حجز / وعي / عرض / ثقة):
+الجمهور (السن، المنطقة، المستوى):
+الرسالة الأساسية (جملة واحدة):
+المحتوى والنص:
+المقاس والمنصة (1080×1350 فيد / 1080×1920 ريل وستوري):
+المراجع:
+الممنوعات:
+المسؤول:
+الديدلاين:`},
+  {id:"t-scripttpl", cat:"قوالب الشغل", title:"قالب السكريبت", text:`العميل والموضوع:
+الهدف (حجز / وعي / ثقة):
+المدة: 30–60 ثانية
+الـ Hook (أول 3 ثواني):
+المشكلة (الجمهور حاسس بإيه):
+الحل / المعلومة (رسالة واحدة بس):
+الكابشن المقترح:
+ملاحظات التصوير (المكان، اللبس، الـ B-roll):`},
+  {id:"t-style", cat:"قوالب الشغل", title:"Shot List (ستايل التصوير)", text:`م. هاجر بتحدده قبل التصوير بيوم، ويتبعت للمصورة بس، مش للعميل.
+
+العميل وميعاد التصوير:
+الإحساس العام (Premium وهادي / دافي وقريب / طاقة عالية):
+الإضاءة والألوان:
+الزوايا وأحجام اللقطات (Close-up / Medium / Wide):
+حركة الكاميرا (ثابتة / Gimbal / حركة بطيئة):
+لقطات الـ B-roll المطلوبة:
+أمثلة مرجعية:
+الممنوعات:
+ملاحظات م. هاجر:`},
+  {id:"t-waiting", cat:"رسايل واتساب", title:"لما الإجابة مش جاهزة", text:"تمام يا دكتور، هراجع مع التيم وهرجعلك في خلال ساعتين."},
+  {id:"t-summary", cat:"رسايل واتساب", title:"ملخص بعد مكالمة", text:`ملخص مكالمتنا النهارده يا دكتور:
+1. [اللي اتفقنا عليه]
+2. المطلوب من حضرتك: [...] قبل [التاريخ]
+3. المطلوب مننا: [...] يوم [التاريخ]
+
+لو في أي حاجة محتاجة تتعدل يا ريت تبلغني.`},
+  {id:"t-request", cat:"رسايل واتساب", title:"طلب محتوى أو داتا", text:`يا دكتور، عشان نلحق محتوى [الشهر / الأسبوع] محتاجين من حضرتك:
+1. [...]
+2. [...]
+
+يا ريت يوصلونا قبل يوم [التاريخ] عشان نلتزم بمواعيد النشر.`},
+  {id:"t-approval", cat:"رسايل واتساب", title:"إرسال شغل للموافقة", text:`يا دكتور، ده [محتوى الأسبوع / الريلز / الصفحة] جاهز لمراجعة حضرتك.
+
+هل الشغل Approved ولا في تعديلات؟ يا ريت الرد قبل [اليوم] عشان ننشر في معادنا.`},
+  {id:"t-received", cat:"رسايل واتساب", title:"استلام التعديلات", text:`تمام يا دكتور، استلمت التعديلات دي:
+1. [...]
+2. [...]
+
+النسخة المعدلة هتوصل حضرتك يوم [التاريخ].`},
+  {id:"t-limit", cat:"رسايل واتساب", title:"التنبيه لحد التعديلات", text:"يا دكتور حابة أوضح إن دي جولة التعديل [التانية] من [العدد] المتفق عليها في الباقة، عشان نقدر نجمع كل ملاحظات حضرتك في المرة دي ونطلع بأفضل نسخة."},
+  {id:"t-delay", cat:"رسايل واتساب", title:"إبلاغ بتأخير", text:"يا دكتور، حبيت أبلغ حضرتك قبلها إن [الشغلانة] هتتأخر لـ [التاريخ الجديد] بسبب [السبب باختصار]. آسفين جدًا على ده، وهتابع بنفسي إنها توصل في المعاد الجديد."},
+  {id:"t-complaint", cat:"رسايل واتساب", title:"الرد على شكوى", text:"عندك حق يا دكتور، وآسفين جدًا على [المشكلة]. اللي حصل إن [السبب باختصار]. هنحلها كده: [الحل]، وهتكون جاهزة [الميعاد]. ومن ناحيتنا عملنا [إجراء] عشان ده ميتكررش."},
+  {id:"t-shootconfirm", cat:"رسايل واتساب", title:"تأكيد التصوير (قبلها بيوم)", text:`فكرة بتصوير بكره يا دكتور:
+- اليوم: [اليوم والتاريخ]
+- الساعة: [الوقت]
+- المكان: [العنوان]
+- اللبس: [...]
+- هنصور: [عدد] فيديوهات، والسكريبتات اتبعتت ووافقت عليها حضرتك
+
+لو في أي تغيير يا ريت تبلغني النهارده.`},
+  {id:"t-editor", cat:"رسايل واتساب", title:"ملاحظات للمونتير", text:`ملاحظات [اسم الفيديو] — النسخة [v1]:
+- 00:03 — [...]
+- 00:15 — [...]
+- 00:42 — [...]
+
+محتاجين النسخة المعدلة يوم [التاريخ] الساعة [الوقت].`},
+  {id:"t-renew30", cat:"رسايل واتساب", title:"تذكير التجديد (قبلها بـ 30 يوم)", text:"يا دكتور، حبيت أفكر حضرتك إن [الدومين / الاستضافة / الباقة] هيتجدد يوم [التاريخ]، وتكلفة التجديد [المبلغ]. هبعت لحضرتك تفاصيل الدفع قريب."},
+  {id:"t-renew7", cat:"رسايل واتساب", title:"تذكير التجديد (قبلها بـ 7 أيام)", text:"يا دكتور، فاضل أسبوع على تجديد [...] يوم [التاريخ]. عشان الموقع والإيميلات ميقفوش، يا ريت نأكد الدفع قبل [التاريخ]."},
+  {id:"t-survey", cat:"رسايل واتساب", title:"استبيان الرضا الشهري", text:`يا دكتور، رأي حضرتك يهمنا جدًا. سؤالين بس:
+1. من 1 لـ 5، قد إيه حضرتك راضي عن شغل الشهر ده؟
+2. إيه أكتر حاجة عايز نحسنها الشهر الجاي؟`},
+  {id:"t-report", cat:"الشهري", title:"قالب التقرير الشهري", text:`1. ملخص في 3 سطور: أهم نتيجة، أهم حاجة اتعملت، وأهم حاجة الشهر الجاي.
+2. أرقام الصفحات مقارنة بالشهر اللي فات: المتابعين، الوصول (Reach)، التفاعل، الرسائل، مشاهدات الريلز.
+3. أحسن 3 بوستات أو ريلز مع سبب نجاحهم.
+4. نتايج الإعلانات: الصرف، عدد الرسائل، وتكلفة الرسالة.
+5. اللي اتنفذ: عدد البوستات والريلز والتصوير مقارنة بالمتفق عليه.
+6. 3 توصيات للشهر الجاي.`},
+  {id:"t-agenda", cat:"الشهري", title:"أجندة الاجتماع أو الزيارة الشهرية", text:`1. نتايج الشهر من التقرير (10 دقايق)
+2. رأي الدكتور وملاحظاته (5 دقايق)
+3. خطة الشهر الجاي: المواضيع، العروض، ميعاد التصوير (10 دقايق)
+4. طلبات أو خدمات جديدة (5 دقايق)
+5. ملخص الاتفاقات يتبعت على الجروب بعد الاجتماع`},
+  {id:"t-crm", cat:"الشيتات", title:"سجل الطلبات والتعديلات (CRM)", text:"التاريخ | العميل | الطلب / التعديل | النوع (محتوى / تصميم / فيديو / موقع) | جولة التعديل | المسؤول | الديدلاين | الحالة (جديد / شغال / اتسلم)"},
+  {id:"t-footlog", cat:"الشيتات", title:"سجل نقل الفوتيج", text:"تاريخ التصوير | العميل | عدد الملفات | الحجم (GB) | على لابتوب الشركة | على لابتوب المونتير | الكارت اتفضى | ميعاد أول نسخة"},
+  {id:"t-access", cat:"الشيتات", title:"شيت الصلاحيات والحسابات", text:"العميل | المنصة (فيسبوك / إنستجرام / تيك توك / جوجل بيزنس / الموقع / الدومين) | نوع الأكسس (Admin / Editor / Partner) | الأكسس على أكونت مين | تاريخ الاستلام | ملاحظات\n\nالباسوردات نفسها في Password Manager، مش في الشيت."},
+  {id:"t-renewsheet", cat:"الشيتات", title:"شيت التجديدات", text:"العميل | الخدمة (دومين / استضافة / باقة) | الشركة | تاريخ التجديد | التكلفة | تنبيه 30 يوم | تنبيه 7 أيام | اتدفع | اتجدد"},
+  {id:"t-competitors", cat:"الشيتات", title:"شيت المنافسين", text:"العميل | المنافس | اللينك | أكتر محتوى نجح عنده | عروض أو أسعار | فكرة نقدر نستفيد بيها | التاريخ"},
+  {id:"t-ideas", cat:"الشيتات", title:"ملف الأفكار", text:"التاريخ | العميل | الفكرة | النوع (ريل / بوست / ستوري / عرض) | المصدر (ترند / منافس / سؤال متكرر) | الحالة (مقترحة / اتوافق عليها / اتنفذت)"},
+  {id:"t-testing", cat:"الشيتات", title:"Checklist الـ Website User Testing", text:`- كل الصفحات بتفتح على الموبايل والديسكتوب من غير مشاكل في الشكل
+- العربي والإنجليزي: النصوص كاملة، والاتجاه صح
+- كل اللينكات والأزرار شغالة ومفيش صفحة 404
+- زرار الواتساب والاتصال بيفتحوا الرقم الصح
+- فورم الحجز أو التواصل بيبعت، والرسالة بتوصل فعلًا
+- اللوكيشن على الخريطة صح
+- الموقع بيفتح في أقل من 3 ثواني على الموبايل
+- الصور واضحة ومش مشدودة
+- مفيش أخطاء إملائية، والأسعار والمواعيد مطابقة لداتا العميل
+- الـ SSL شغال (القفل جنب اللينك)
+- اللوجو والـ Favicon وعنوان الصفحة صح
+
+كل مشكلة تتبعت للديفلوبر بسكرين شوت ولينك الصفحة ونوع الجهاز.`},
+  {id:"t-folders", cat:"الملفات والتصوير", code:true, title:"هيكل الفولدرات وتسمية الملفات", text:`MAZCODEX Clients/
+└── Dr-Husam/
+    ├── 00_Contract-Invoices/
+    ├── 01_Brand/
+    ├── 02_Client-Data/
+    ├── 03_Website/
+    └── 04_Monthly/
+        └── 2026-11/
+            ├── 01_Scripts/
+            ├── 02_Raw-Footage/
+            │   └── Shoot-01_2026-11-03/
+            ├── 03_Edited-Videos/
+            │   ├── Drafts/
+            │   └── Final/
+            ├── 04_Designs/
+            └── 05_Report/
+
+Naming: Client_Type_Topic_YYYY-MM-DD_v1
+Dr-Husam_Reel_Varicose_2026-11-05_v1
+Dr-Husam_Reel_Varicose_2026-11-05_FINAL
+Dr-Husam_Script_Varicose_2026-11-01
+Dr-Husam_Post_Offer_2026-11-10_v2
+Dr-Husam_Report_2026-10`},
+  {id:"t-canon", cat:"الملفات والتصوير", title:"فورمات الكارت من كانون", text:CANON},
+  {id:"t-review", cat:"الملفات والتصوير", title:"Checklist مراجعة الفيديو", text:REVIEW_LIST.map(x=>"- "+x).join("\n")}
+];
+const TPL = Object.fromEntries(TEMPLATES.map(t=>[t.id,t]));
+
+const KPIS = [
+  ["التواصل","سرعة الرد على رسائل العملاء","خلال 5 دقايق في مواعيد الشغل","مراجعة عينة من الجروبات كل أسبوع"],
+  ["التواصل","الرجوع بالإجابة بعد مراجعة التيم","خلال ساعتين","توقيت الرسالتين على الجروب"],
+  ["التواصل","ملخص مكتوب بعد كل مكالمة","100% من المكالمات","الجروب والـ CRM"],
+  ["التواصل","حل الشكاوى","خلال 24 ساعة","تاريخ الشكوى وتاريخ الحل على الـ CRM"],
+  ["الأونبوردنج","الإنترو كول","خلال ساعتين من الدفع لو قبل 8 بالليل، وأول حاجة تاني يوم لو بعد 8","وقت الدفع ووقت الكول"],
+  ["الأونبوردنج","الجروب ورسالة الترحيب","خلال 5 دقايق من الكول","توقيت إنشاء الجروب"],
+  ["الأونبوردنج","زيارة جمع الداتا والأكسس","خلال 48 ساعة من التعاقد، والـ Checklist كاملة","الـ Checklist وشيت الصلاحيات"],
+  ["الأونبوردنج","كتابة السكريبتات وإرسالها","تاني يوم بعد جمع الداتا","تاريخ الزيارة وتاريخ إرسال السكريبتات"],
+  ["الأونبوردنج","التصوير","خلال 72 ساعة بحد أقصى من ميتنج جمع الداتا","تاريخ الزيارة وتاريخ التصوير"],
+  ["التنفيذ","الالتزام بالديدلاينز","95% من التاسكات في معادها","البورد / الـ CRM"],
+  ["التنفيذ","الالتزام بخطة النشر","100% من البوستات المتفق عليها في معادها","الكونتنت كالندر"],
+  ["التنفيذ","الشغل المقبول من أول مرة","70% أو أكتر","الـ Approvals من غير تعديل ÷ إجمالي الشغل"],
+  ["التنفيذ","متوسط جولات التعديل","جولتين أو أقل لكل شغلانة","سجل التعديلات على الـ CRM"],
+  ["التنفيذ","تسجيل الطلبات والتعديلات على الـ CRM","100%","مراجعة عشوائية أسبوعية"],
+  ["التنفيذ","Website User Testing قبل التسليم","100% من المواقع","الـ Checklist لكل موقع"],
+  ["التصوير","تسليم السكريبتات للعميل","في الأونبوردنج: تاني يوم بعد الداتا ويتوافق عليها قبل التصوير. بعدها: قبل التصوير بـ 5 أيام","تاريخ إرسال السكريبت وتاريخ التصوير"],
+  ["التصوير","تنفيذ الـ Shot List","توصل للمصورة قبل التصوير بيوم، والتصوير ماشي عليها 100%","الـ Shot List بعد التصوير"],
+  ["التصوير","نقل الفوتيج للابتوبين وتفضية الكارت","نفس يوم التصوير، وصفر ملفات ضايعة","سجل النقل على الـ CRM"],
+  ["المونتاج","مراجعة فيديوهات المونتير","خلال ساعة من استلام النسخة","تاريخ الاستلام وتاريخ الملاحظات"],
+  ["المونتاج","فيديوهات اتبعتت للعميل من غير Checklist","صفر","مراجعة عشوائية"],
+  ["المونتاج","فيديوهات وافق عليها العميل من أول مرة","80% أو أكتر","الـ Approvals على الجروب"],
+  ["المونتاج","تسليم المونتاج النهائي بالتعديلات","خلال 48 ساعة من التصوير","تاريخ التصوير وتاريخ موافقة العميل"],
+  ["التصاميم","تسليم التصاميم النهائية بالتعديلات","خلال 48 ساعة","تاريخ الـ Brief وتاريخ موافقة العميل"],
+  ["الملفات","الالتزام بنظام الملفات","اللابتوبين والدرايف متطابقين 100%","مراجعة دورية"],
+  ["الشهري","التقارير الشهرية","لكل العملاء قبل يوم 5 في الشهر","تاريخ الإرسال"],
+  ["الشهري","زيارات العيادات","مرتين في الشهر أول 3 شهور، وبعدها مرة","عدّاد الزيارات في تاب العملاء"],
+  ["الشهري","دومين أو استضافة وقعت","صفر","شيت التجديدات"],
+  ["العملاء","رضا العملاء","4.5 من 5 أو أكتر","استبيان شهري قصير (سؤالين)"],
+  ["العملاء","الاحتفاظ بالعملاء","90% أو أكتر يجددوا","المجددين ÷ اللي عقدهم خلص"],
+  ["العملاء","Upselling","خدمة إضافية واحدة على الأقل كل 3 شهور","المبيعات الإضافية من العملاء الحاليين"]
+];
+
+/* ---------- Task rendering (daily / recurring / monthly) ---------- */
+function tplButton(id){
+  const t = TPL[id]; if(!t) return null;
+  return h("button",{class:"more",onclick:()=>openTemplate(t)},"افتحي القالب: "+t.title);
+}
+function taskEl(pk, t){
+  const s = ticks[pk];
+  const hasChips = t.chips && t.chips.length;
+  const isDone = () => hasChips ? t.chips.every(c=>s[t.id+"|"+c]) : !!s[t.id];
+  const box = h("input",{type:"checkbox",class:"check","aria-label":t.title});
+  const stamp = h("span",{class:"stamp"});
+  const title = h("span",{class:"t-title"},t.title);
+  title.onclick = () => { box.checked = !box.checked; box.onchange(); };
+  const chipBtns = hasChips ? t.chips.map(c => {
+    const b = h("button",{class:"chip",dir:"ltr","aria-pressed":String(!!s[t.id+"|"+c])},short(c));
+    b.onclick = () => { const k=t.id+"|"+c; if(s[k]) delete s[k]; else s[k]=new Date().toISOString(); b.setAttribute("aria-pressed",String(!!s[k])); sync(); };
+    return b;
+  }) : [];
+  const el = h("div",{class:"task"}, box,
+    h("div",{class:"t-body"},
+      h("div",{class:"t-head"}, t.when ? h("span",{class:"when"},t.when) : null, title, stamp),
+      h("div",{class:"t-note"},t.note),
+      hasChips ? h("div",{class:"chips"},chipBtns) : null,
+      t.tpl ? tplButton(t.tpl) : null));
+  box.onchange = () => {
+    const ts = new Date().toISOString();
+    if(hasChips){ t.chips.forEach((c,i)=>{ const k=t.id+"|"+c; if(box.checked) s[k]=s[k]||ts; else delete s[k]; chipBtns[i].setAttribute("aria-pressed",String(box.checked)); }); }
+    else { if(box.checked) s[t.id]=ts; else delete s[t.id]; }
+    sync();
+  };
+  function paint(){
+    box.checked = isDone(); el.classList.toggle("done", box.checked);
+    if(hasChips){ const n=t.chips.filter(c=>s[t.id+"|"+c]).length; stamp.textContent = n ? `${n}/${t.chips.length}` : ""; }
+    else stamp.textContent = s[t.id] ? "✓ " + fmtTime(new Date(s[t.id])) : "";
   }
-  cb.onchange=()=>{if(t.chips&&t.chips.length){t.chips.forEach((c,i)=>{s[id+"|"+c]=cb.checked;chips[i].setAttribute("aria-pressed",cb.checked)})}else s[id]=cb.checked;sync()};
-  function sync(){cb.checked=allDone();el.classList.toggle("done",cb.checked);save(p);meters()}
-  el.classList.toggle("done",cb.checked);
-  el.append(time,cb,body);return el;
+  function sync(){ saveTicks(pk); paint(); meters(); }
+  paint();
+  return el;
 }
-function breakEl(t){const el=document.createElement("div");el.className="task brk";el.innerHTML=`<div class="time">${t.time}</div><div></div><div class="t-body"><div class="t-title">${t.title}</div><div class="t-note">${t.note}</div></div>`;return el}
+function countFor(pk, list){ const s=ticks[pk]; let a=0,b=0; list.forEach(t=>{ if(t.chips&&t.chips.length){ t.chips.forEach(c=>{b++; if(s[t.id+"|"+c]) a++;}); } else { b++; if(s[t.id]) a++; } }); return [a,b]; }
+function setMeter(id,[a,b],sub){ const pct=b?Math.round(a/b*100):0; const m=document.getElementById(id); m.querySelector(".ring").style.setProperty("--p",pct); m.querySelector(".ring b").textContent=pct+"%"; m.classList.toggle("full",pct===100); document.getElementById(id+"-s").textContent=sub.replace("{a}",a).replace("{b}",b); }
 function meters(){
-  prog.day=[0,0];prog.week=[0,0];prog.month=[0,0];
-  DAILY.forEach((t,i)=>{if(!t.brk)countTask("day","d"+i,t.chips)});
-  WEEKLY.forEach(g=>g.items.forEach((t,i)=>countTask("week","w"+g.day+"-"+i,t.chips)));
-  MONTHLY.forEach((g,gi)=>g.items.forEach((t,i)=>countTask("month","m"+gi+"-"+i,t.chips)));
-  [["day","day"],["week","week"],["month","month"]].forEach(([p,n])=>{const [a,b]=prog[p];const pct=b?Math.round(a/b*100):0;
-    document.getElementById("m-"+n).textContent=pct+"%";document.getElementById("b-"+n).style.width=pct+"%"});
+  setMeter("mt-day",countFor(dayKey,DAILY),"{a} من {b}");
+  setMeter("mt-week",countFor(weekKey,RECURRING),"{a} من {b} الأسبوع ده");
+  setMeter("mt-month",countFor(monthKey,MONTHLY),"{a} من {b}");
+  updateCounts();
 }
-function group(title,tag,today){const g=document.createElement("div");g.className="group";const h=document.createElement("h2");h.textContent=title;
-  if(tag){const s=document.createElement("span");s.className="tag"+(today?" today":"");s.textContent=tag;h.appendChild(s)}g.appendChild(h);return g}
 
-// Daily
-(function(){const sec=document.getElementById("daily");
-  const p=document.createElement("p");p.className="intro";p.textContent="The same routine every working day. Tasks with names are done one client at a time: tap each name when it's handled.";sec.appendChild(p);
-  const g=group("Today's routine", dow>4?"Weekend: optional":DAYS[dow]+" rotation: "+(todayRota.map(short).join(", ")||"none"),true);
-  DAILY.forEach((t,i)=>g.appendChild(t.brk?breakEl(t):taskEl("day","d"+i,t,t.time)));sec.appendChild(g)})();
-// Weekly
-(function(){const sec=document.getElementById("weekly");
-  const p=document.createElement("p");p.className="intro";p.textContent="Fixed weekly anchors on top of the daily routine. Each marketing client also gets one personal check-in per week on their rotation day.";sec.appendChild(p);
-  const r=group("Check-in rotation");const rl=document.createElement("div");rl.className="t-note";
-  rl.innerHTML=[0,1,2,3].map(d=>`<div><b>${DAYS[d]}:</b> ${ROTA[d].join(", ")}</div>`).join("");r.appendChild(rl);sec.appendChild(r);
-  WEEKLY.forEach(gw=>{const g=group(DAYS[gw.day],gw.day===dow?"Today":"",gw.day===dow);gw.items.forEach((t,i)=>g.appendChild(taskEl("week","w"+gw.day+"-"+i,t,DAYS[gw.day].slice(0,3).toUpperCase())));sec.appendChild(g)})})();
-// Monthly
-(function(){const sec=document.getElementById("monthly");
-  const p=document.createElement("p");p.className="intro";p.textContent="The monthly cycle: report on this month, plan and approve next month, and check how every client feels about us.";sec.appendChild(p);
-  const d=now.getDate();const cur=d<=5?1:d<=15?2:d<=20?3:d<=25?4:5;
-  MONTHLY.forEach((gm,gi)=>{const g=group(gm.when,gi===cur?"Now":"",gi===cur);gm.items.forEach((t,i)=>g.appendChild(taskEl("month","m"+gi+"-"+i,t,"")));sec.appendChild(g)})})();
-// Clients
-(function(){const sec=document.getElementById("clients");
-  const p=document.createElement("p");p.className="intro";p.textContent="Every client she owns, what they bought, and how they're feeling. Update the status after each check-in.";sec.appendChild(p);
-  const lg=document.createElement("div");lg.className="legend";lg.innerHTML='<span><i class="dot" style="background:var(--done)"></i>Happy</span><span><i class="dot" style="background:var(--warn)"></i>Neutral</span><span><i class="dot" style="background:var(--risk)"></i>At risk</span>';sec.appendChild(lg);
-  const grid=document.createElement("div");grid.className="clients";
-  const all=[...MKT.map(n=>({n,s:["Digital marketing"].concat(WEB.includes(n)?["Website"]:[])})),...SOFT.map(([n,x])=>({n,s:[x]}))];
-  const st=store.get("clients",{});
-  all.forEach((c,i)=>{const el=document.createElement("div");el.className="client";
-    const day=Object.keys(ROTA).find(d=>ROTA[d].includes(c.n));
-    el.innerHTML=`<h3></h3><div class="pills">${c.s.map(x=>`<span class="pill">${x}</span>`).join("")}</div><div class="meta">${day!==undefined?"Weekly check-in: "+DAYS[day]:"Check-in twice a month"}${CLINICS.includes(c.n)?" · Clinic visit monthly":""}</div>
-    <select id="st-${i}" aria-label="Status"><option value="">Status not set</option><option value="happy">Happy</option><option value="neutral">Neutral</option><option value="risk">At risk</option></select>
-    <textarea id="nt-${i}" placeholder="Last check-in notes, open requests, next shoot date"></textarea>`;
-    el.querySelector("h3").textContent=c.n;
-    const sel=el.querySelector("select"),ta=el.querySelector("textarea");const v=st[c.n]||{};sel.value=v.s||"";ta.value=v.t||"";
-    const paint=()=>{el.className="client"+(sel.value?" s-"+sel.value:"")};paint();
-    const put=()=>{st[c.n]={s:sel.value,t:ta.value};store.set("clients",st);paint()};
-    sel.onchange=put;ta.oninput=put;grid.appendChild(el)});
-  sec.appendChild(grid)})();
-// Playbooks
-(function(){const sec=document.getElementById("playbooks");
-  const p=document.createElement("p");p.className="intro";p.textContent="Step-by-step checklists for the recurring jobs, so they're done the same way every time.";sec.appendChild(p);
-  const g=document.createElement("div");g.className="pbs";
-  PLAYBOOKS.forEach(pb=>{const el=document.createElement("div");el.className="pb";el.innerHTML=`<h2></h2><p></p><ol>${pb.steps.map(s=>"<li></li>").join("")}</ol>`;
-    el.querySelector("h2").textContent=pb.title;el.querySelector("p").textContent=pb.sub;el.querySelectorAll("li").forEach((li,i)=>li.textContent=pb.steps[i]);g.appendChild(el)});
-  sec.appendChild(g)})();
+/* ---------- Tabs ---------- */
+const TABS = [["daily","اليومي"],["recurring","الدوري"],["monthly","الشهري"],["onboarding","الأونبوردنج"],["shoots","التصوير"],["clients","العملاء"],["templates","القوالب"],["kpis","الـ KPIs"]];
+const tabsEl = document.getElementById("tabs");
+TABS.forEach(([id,label]) => tabsEl.append(h("button",{role:"tab","data-tab":id,"aria-selected":"false",onclick:()=>show(id)},label,h("span",{class:"count",id:"c-"+id,hidden:true}))));
+function show(id){ TABS.forEach(([t])=>{ document.getElementById(t).hidden = t!==id; tabsEl.querySelector(`[data-tab="${t}"]`).setAttribute("aria-selected",String(t===id)); }); store.set("tab",id); history.replaceState(null,"","#"+id); }
+function updateCounts(){
+  const setC=(id,n)=>{ const c=document.getElementById("c-"+id); if(!c) return; c.hidden=!n; c.textContent=n; };
+  const ob=store.get("onboard",[]).filter(c=>!c.archived).length; setC("onboarding",ob);
+  const sh=store.get("shoots",[]).filter(c=>!c.archived).length; setC("shoots",sh);
+}
 
-meters();
-const tabs=[...document.querySelectorAll("nav button")];
-function show(id){tabs.forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===id));["daily","weekly","monthly","clients","playbooks"].forEach(s=>document.getElementById(s).hidden=s!==id);store.set("tab",id)}
-tabs.forEach(b=>b.onclick=()=>show(b.dataset.tab));
-const h=(location.hash||"").slice(1);show(["daily","weekly","monthly","clients","playbooks"].includes(h)?h:store.get("tab","daily"));
-document.getElementById("reset").onclick=()=>{document.querySelectorAll("#daily input[type=checkbox]").forEach(cb=>{cb.checked=false;cb.dispatchEvent(new Event("change"))})};
+/* ---------- Daily / Recurring / Monthly sections ---------- */
+function renderList(secId, lead, heading, tag, pk, list){
+  const sec=document.getElementById(secId); sec.replaceChildren();
+  sec.append(h("p",{class:"lead"},lead), h("h2",{},heading, tag ? h("span",{class:"tag"},tag) : null), h("div",{class:"list"}, list.map(t=>taskEl(pk,t))));
+}
+function renderDaily(){
+  const off = now.getDay()===5 || now.getDay()===6;
+  renderList("daily","أول ساعة ونص من الشيفت للمتابعة والرد، وباقي اليوم للتنفيذ مع العملاء، وآخر نص ساعة للتسجيل. التاسكات اللي عليها أسماء عملاء بتتعلّم عميل عميل.","روتين النهارده", off?"إجازة":fmtDay(now), dayKey, DAILY);
+}
+function renderRecurring(){ renderList("recurring","تاسكات بتتكرر بانتظام، وتتوزع على الأسبوع حسب ضغط الشغل. بتبدأ من جديد كل يوم أحد.","التاسكات الدورية","أسبوع "+sun.toLocaleDateString(LOC,{day:"numeric",month:"short"}), weekKey, RECURRING); }
+function renderMonthly(){ renderList("monthly","التقارير أول الشهر، والاجتماعات بعدها، والتخطيط للشهر الجاي في آخره.","التاسكات الشهرية", now.toLocaleDateString(LOC,{month:"long",year:"numeric"}), monthKey, MONTHLY); }
+
+/* ---------- Onboarding ---------- */
+function callDue(paid){ const p=new Date(paid); if(p.getHours()<20) return new Date(p.getTime()+2*HOUR); const d=new Date(p); d.setDate(d.getDate()+1); d.setHours(12,0,0,0); return d; }
+function endOf(d){ const x=new Date(d); x.setHours(21,0,0,0); return x; }
+const T = v => v ? new Date(v).getTime() : null;
+const OB_STEPS = [
+  {id:"handover", title:"جلسة التسليم مع حبيبة", note:"تفهمي: البيعة جت إزاي، والباقة والسعر، وكل الوعود اللي اتقالت للعميل بالظبط، وتوقعاته وشخصيته، وأي مخاوف قالها. تكتبي الملخص بالقالب.", due:c=>callDue(c.paid), tpl:"t-handover"},
+  {id:"hagar", title:"عرض الملخص على م. هاجر", note:"عشان تبدأ تقولب الاستراتيجية. تاخدي منها مقتطفات بسيطة جدًا (جملة أو اتنين) للعميل في الإنترو كول، من غير تفاصيل ولا أرقام.", due:c=>callDue(c.paid)},
+  {id:"call", title:"الإنترو كول", note:"مكالمة 15–20 دقيقة بأسلوب Elite But Friendly. في نفس المكالمة يتحدد ميعاد ميتنج جمع الداتا (خلال 48 ساعة).", due:c=>callDue(c.paid), tpl:"t-script"},
+  {id:"group", title:"جروب الواتساب ورسالة الترحيب", note:"اسم الجروب: Dr. الاسم الأول + اسم العيلة -- MAZCODEX، والصورة لوجو العميل. الأعضاء: العميل، رقم منار البيزنس، رقم Info (أدمن)، م. مازن، م. هاجر. خلال 5 دقايق من الكول.", due:c=>new Date((T(c.done.call)||callDue(c.paid).getTime())+5*6e4), tpl:"t-welcome"},
+  {id:"visit", title:"ميتنج جمع الداتا والأكسس", note:"بالـ Checklist، وفي نفس الميتنج يتحدد ميعاد التصوير خلال 72 ساعة بحد أقصى. الأكسس يتاخد قبل ما تمشي.", due:c=>new Date(T(c.paid)+48*HOUR), list:"visit"},
+  {id:"register", title:"تسجيل وتسليم للفريق", note:"الداتا على الدرايف في 02_Client-Data، والعميل يتفتح على الـ CRM، والأكسس في شيت الصلاحيات، وBrief البداية يتسلم للفريق.", due:c=>endOf(visitBase(c))},
+  {id:"scripts", title:"كتابة السكريبتات وإرسالها", note:"تاني يوم بعد جمع الداتا. Hook في أول 3 ثواني، رسالة واحدة، CTA واضح، 30–60 ثانية. الدكتور يراجع أي معلومة طبية، والموافقة قبل يوم التصوير.", due:c=>endOf(new Date(visitBase(c).getTime()+DAY)), tpl:"t-scripttpl"},
+  {id:"designs", title:"التصاميم بالتعديلات", note:"جاهزة بالتعديلات خلال 48 ساعة من تسليم الـ Brief.", due:c=>new Date((T(c.done.register)||visitBase(c).getTime())+48*HOUR)},
+  {id:"shoot", title:"التصوير", note:"خلال 72 ساعة بحد أقصى من ميتنج الداتا. افتحي له تصوير في تاب التصوير عشان تتابعي الفوتيج والمونتاج.", due:c=>new Date(visitBase(c).getTime()+72*HOUR)},
+  {id:"edit", title:"المونتاج النهائي بالتعديلات", note:"خلال 48 ساعة من التصوير، بعد مراجعتك بالـ Checklist.", due:c=>new Date((T(c.done.shoot)||visitBase(c).getTime()+72*HOUR)+48*HOUR)}
+];
+function visitBase(c){ return c.done.visit ? new Date(c.done.visit) : new Date(T(c.paid)+48*HOUR); }
+function saveOnboard(list){ store.set("onboard",list); updateCounts(); }
+function renderOnboarding(){
+  const sec=document.getElementById("onboarding"); sec.replaceChildren();
+  const list=store.get("onboard",[]);
+  sec.append(h("p",{class:"lead"},"حوالي 7 أيام من الدفع لحد أول فيديوهات نهائية. ضيفي العميل بوقت الدفع، والمواعيد النهائية بتتحسب لوحدها وبتتظبط على اللي اتعمل فعلًا."));
+  sec.append(h("div",{class:"timeline"},
+    h("div",{class:"tl"},h("b",{},"يوم 0"),"تسليم، هاجر، كول، جروب"),
+    h("div",{class:"tl"},h("b",{},"يوم 2"),"ميتنج الداتا وميعاد التصوير"),
+    h("div",{class:"tl"},h("b",{},"يوم 3"),"السكريبتات"),
+    h("div",{class:"tl"},h("b",{},"يوم 5"),"آخر ميعاد للتصوير"),
+    h("div",{class:"tl"},h("b",{},"يوم 7"),"المونتاج النهائي")));
+  const name=h("input",{type:"text",placeholder:"Dr. Ahmed Hassan",required:true});
+  const paid=h("input",{type:"datetime-local"}); const nd=new Date(); nd.setSeconds(0,0); paid.value=`${ymd(nd)}T${pad(nd.getHours())}:${pad(nd.getMinutes())}`;
+  sec.append(h("div",{class:"panel"},h("h3",{},"عميل جديد"),h("div",{class:"form"},
+    h("label",{class:"field"},"اسم الدكتور",name),
+    h("label",{class:"field"},"وقت الدفع",paid),
+    h("button",{class:"btn",onclick:()=>{ if(!name.value.trim()){name.focus();return;} const l=store.get("onboard",[]); l.unshift({id:"c"+Date.now(),name:name.value.trim(),paid:new Date(paid.value).toISOString(),done:{},visit:{},notes:""}); saveOnboard(l); renderOnboarding(); toast("اتضاف "+name.value.trim()); }},"ابدئي الأونبوردنج"))));
+  const active=list.filter(c=>!c.archived), arch=list.filter(c=>c.archived);
+  if(!active.length) sec.append(h("div",{class:"empty"},"مفيش عملاء في الأونبوردنج دلوقتي."));
+  active.forEach(c=>sec.append(onboardCase(c)));
+  if(arch.length){ const d=h("details",{},h("summary",{class:"lead",style:"cursor:pointer"},`الأونبوردنج اللي خلص (${arch.length})`),h("div",{class:"list",style:"margin-top:10px"},arch.map(c=>onboardCase(c)))); sec.append(d); }
+}
+function onboardCase(c){
+  const doneN=OB_STEPS.filter(s=>c.done[s.id]).length, pct=Math.round(doneN/OB_STEPS.length*100);
+  const mutate=fn=>{ const l=store.get("onboard",[]); const x=l.find(y=>y.id===c.id); if(!x) return; fn(x); saveOnboard(l); renderOnboarding(); };
+  const steps=h("ol",{class:"steps"}, OB_STEPS.map(s=>{
+    const done=c.done[s.id]; const due=s.due(c); const r=relDue(due.getTime(),done);
+    const box=h("input",{type:"checkbox",class:"check","aria-label":s.title}); box.checked=!!done;
+    box.onchange=()=>mutate(x=>{ if(box.checked) x.done[s.id]=new Date().toISOString(); else delete x.done[s.id]; });
+    let extra=null;
+    if(s.list==="visit"){ extra=h("div",{class:"detail"},h("div",{class:"mini"},VISIT_LIST.map((v,i)=>{ const on=!!(c.visit&&c.visit[i]); const cb=h("input",{type:"checkbox",class:"check"}); cb.checked=on; cb.onchange=()=>mutate(x=>{ x.visit=x.visit||{}; if(cb.checked) x.visit[i]=new Date().toISOString(); else delete x.visit[i]; }); return h("label",{class:on?"on":""},cb,h("span",{},v)); }))); }
+    return h("li",{class:"step"+(done?" done":"")}, box, h("div",{},
+      h("div",{class:"s-top"},h("span",{class:"s-title",onclick:()=>{box.checked=!box.checked;box.onchange();},style:"cursor:pointer"},s.title),h("span",{class:"due "+r.cls},r.txt)),
+      h("div",{class:"t-note"},s.note), s.tpl?tplButton(s.tpl):null, extra));
+  }));
+  const notes=h("textarea",{placeholder:"ملاحظات: وعود حبيبة، مقتطفات م. هاجر، ميعاد الميتنج والتصوير..."}); notes.value=c.notes||"";
+  notes.oninput=()=>{ const l=store.get("onboard",[]); const x=l.find(y=>y.id===c.id); if(x){x.notes=notes.value; store.set("onboard",l);} };
+  return h("div",{class:"case"},
+    h("div",{class:"case-head"},
+      h("div",{},h("h3",{},c.name),h("div",{class:"meta"},"الدفع: "+fmtShort(new Date(c.paid))),h("div",{class:"progress"},h("i",{style:`width:${pct}%`}))),
+      h("div",{class:"row"},h("span",{class:"tag"+(pct===100?" ok":"")},`${doneN} من ${OB_STEPS.length}`),
+        h("button",{class:"ghost",onclick:()=>mutate(x=>{x.archived=!x.archived})},c.archived?"رجّعيه":"خلص، أرشفيه"),
+        h("button",{class:"danger",onclick:()=>{ if(confirm("تمسحي "+c.name+" من الأونبوردنج؟")){ saveOnboard(store.get("onboard",[]).filter(y=>y.id!==c.id)); renderOnboarding(); } }},"مسح"))),
+    h("div",{class:"case-body"},steps,notes));
+}
+
+/* ---------- Shoots ---------- */
+const SH_STEPS = [
+  {id:"confirm", title:"تأكيد التصوير مع العميل والمصورة", note:"بالعنوان والوقت والمطلوب.", due:d=>new Date(d-DAY), tpl:"t-shootconfirm"},
+  {id:"style", title:"استلام الـ Shot List (ستايل التصوير) من م. هاجر وإرسالها للمصورة", note:"للمصورة بس، مش للعميل، وتتأكدي إنها فهمتها.", due:d=>new Date(d-DAY), tpl:"t-style"},
+  {id:"scripts", title:"السكريبتات متوافق عليها من العميل", note:"في الأونبوردنج: قبل يوم التصوير. في الشهور اللي بعدها: قبل التصوير بـ 5 أيام.", due:d=>new Date(d-DAY)},
+  {id:"card", title:"الكارت فاضي ومساحته كاملة", note:"64GB بتكفي حوالي ساعة 4K أو من 2 لـ 4 ساعات Full HD. لو التصوير أطول، كارت احتياطي.", due:d=>new Date(d)},
+  {id:"attend", title:"حضور التصوير", note:"توصلي قبل الميعاد، والتصوير ماشي على الستايل، تساعدي الدكتور بالسكريبت، وB-roll إضافي وصور Behind the Scenes. محدش يمشي قبل ما كل الفيديوهات المطلوبة تتصور.", due:d=>new Date(d)},
+  {id:"company", title:"نسخ الفوتيج من الكارت للابتوب الشركة ومراجعته", note:"Copy مش Cut. عدد الملفات والحجم = الكارت، وتشغيل 3 فيديوهات.", due:d=>endOf(d), list:"footage"},
+  {id:"editor", title:"نسخ الفوتيج من الكارت للابتوب المونتير ومراجعته", note:"من الكارت مباشرة، لفولدر بنفس الاسم، وتتراجع بنفس الطريقة.", due:d=>endOf(d)},
+  {id:"handoff", title:"تسليم المونتير السكريبتات والملاحظات وميعاد أول نسخة", note:"مع الـ Shot List وملاحظات التصوير.", due:d=>endOf(d), tpl:"t-editor"},
+  {id:"format", title:"Format للكارت من كاميرا كانون", note:"بعد ما النسختين يتأكدوا بس. ممنوع المسح أو الفورمات من اللابتوب.", due:d=>endOf(d), tpl:"t-canon"},
+  {id:"crm", title:"تسجيل النقل على الـ CRM", note:"تاريخ النقل، عدد الملفات، الحجم، واتسلم للمونتير.", due:d=>endOf(d), tpl:"t-footlog"},
+  {id:"review", title:"مراجعة فيديوهات المونتير بالـ Checklist", note:"خلال ساعة من استلام النسخة. الملاحظات ترجع للمونتير مرة واحدة مجمعة بالتوقيت.", due:d=>new Date(d.getTime()+36*HOUR), list:"review"},
+  {id:"final", title:"المونتاج النهائي بالتعديلات وموافقة العميل", note:"خلال 48 ساعة من التصوير.", due:d=>new Date(d.getTime()+48*HOUR)},
+  {id:"drive", title:"النسخة النهائية على الدرايف بالاسم الصح", note:"في 03_Edited-Videos / Final.", due:d=>new Date(d.getTime()+48*HOUR), tpl:"t-folders"}
+];
+function saveShoots(l){ store.set("shoots",l); updateCounts(); }
+function renderShoots(){
+  const sec=document.getElementById("shoots"); sec.replaceChildren();
+  sec.append(h("p",{class:"lead"},"كل تصوير ليه كارت لوحده من التأكيد قبلها بيوم لحد النسخة النهائية على الدرايف. المونتاج النهائي خلال 48 ساعة من التصوير."));
+  const all=[...new Set([...CLINICS,...SOFT.map(s=>s[0]),...store.get("onboard",[]).map(c=>c.name)])];
+  const sel=h("input",{type:"text",list:"clientList",placeholder:"اسم العميل"});
+  const dl=h("datalist",{id:"clientList"},all.map(n=>h("option",{value:n})));
+  const dt=h("input",{type:"datetime-local"}); const nd=new Date(Date.now()+DAY); nd.setHours(14,0,0,0); dt.value=`${ymd(nd)}T${pad(nd.getHours())}:00`;
+  sec.append(h("div",{class:"panel"},h("h3",{},"تصوير جديد"),h("div",{class:"form"},h("label",{class:"field"},"العميل",sel,dl),h("label",{class:"field"},"ميعاد التصوير",dt),
+    h("button",{class:"btn",onclick:()=>{ if(!sel.value.trim()){sel.focus();return;} const l=store.get("shoots",[]); l.unshift({id:"s"+Date.now(),client:sel.value.trim(),at:new Date(dt.value).toISOString(),done:{},review:{},footage:{},notes:""}); saveShoots(l); renderShoots(); toast("اتضاف تصوير "+sel.value.trim()); }},"ضيفي التصوير"))));
+  const list=store.get("shoots",[]); const active=list.filter(s=>!s.archived).sort((a,b)=>new Date(a.at)-new Date(b.at)), arch=list.filter(s=>s.archived);
+  if(!active.length) sec.append(h("div",{class:"empty"},"مفيش تصوير جاي. ضيفي أول تصوير من فوق."));
+  active.forEach(s=>sec.append(shootCase(s)));
+  if(arch.length) sec.append(h("details",{},h("summary",{class:"lead",style:"cursor:pointer"},`تصوير خلص (${arch.length})`),h("div",{class:"list",style:"margin-top:10px"},arch.map(shootCase))));
+}
+function shootCase(sh){
+  const at=new Date(sh.at); const doneN=SH_STEPS.filter(s=>sh.done[s.id]).length, pct=Math.round(doneN/SH_STEPS.length*100);
+  const mutate=fn=>{ const l=store.get("shoots",[]); const x=l.find(y=>y.id===sh.id); if(!x) return; fn(x); saveShoots(l); renderShoots(); };
+  const miniList=(items,key)=>h("div",{class:"detail"},h("div",{class:"mini"},items.map((v,i)=>{ const on=!!(sh[key]&&sh[key][i]); const cb=h("input",{type:"checkbox",class:"check"}); cb.checked=on; cb.onchange=()=>mutate(x=>{ x[key]=x[key]||{}; if(cb.checked) x[key][i]=new Date().toISOString(); else delete x[key][i]; }); return h("label",{class:on?"on":""},cb,h("span",{},v)); })));
+  const steps=h("ol",{class:"steps"},SH_STEPS.map(s=>{
+    const done=sh.done[s.id]; const r=relDue(s.due(at).getTime(),done);
+    const box=h("input",{type:"checkbox",class:"check","aria-label":s.title}); box.checked=!!done;
+    box.onchange=()=>mutate(x=>{ if(box.checked) x.done[s.id]=new Date().toISOString(); else delete x.done[s.id]; });
+    return h("li",{class:"step"+(done?" done":"")},box,h("div",{},
+      h("div",{class:"s-top"},h("span",{class:"s-title",style:"cursor:pointer",onclick:()=>{box.checked=!box.checked;box.onchange();}},s.title),h("span",{class:"due "+r.cls},r.txt)),
+      h("div",{class:"t-note"},s.note), s.tpl?tplButton(s.tpl):null,
+      s.list==="review"?miniList(REVIEW_LIST,"review"):null, s.list==="footage"?miniList(FOOTAGE,"footage"):null));
+  }));
+  const notes=h("textarea",{placeholder:"عدد الملفات، الحجم، ملاحظات المونتير..."}); notes.value=sh.notes||"";
+  notes.oninput=()=>{ const l=store.get("shoots",[]); const x=l.find(y=>y.id===sh.id); if(x){x.notes=notes.value; store.set("shoots",l);} };
+  return h("div",{class:"case"},
+    h("div",{class:"case-head"},
+      h("div",{},h("h3",{},short(sh.client)),h("div",{class:"meta"},"التصوير: "+fmtShort(at)),h("div",{class:"progress"},h("i",{style:`width:${pct}%`}))),
+      h("div",{class:"row"},h("span",{class:"tag"+(pct===100?" ok":"")},`${doneN} من ${SH_STEPS.length}`),
+        h("button",{class:"ghost",onclick:()=>mutate(x=>{x.archived=!x.archived})},sh.archived?"رجّعيه":"خلص، أرشفيه"),
+        h("button",{class:"danger",onclick:()=>{ if(confirm("تمسحي التصوير ده؟")){ saveShoots(store.get("shoots",[]).filter(y=>y.id!==sh.id)); renderShoots(); } }},"مسح"))),
+    h("div",{class:"case-body"},steps,notes));
+}
+
+/* ---------- Clients ---------- */
+function renderClients(){
+  const sec=document.getElementById("clients"); sec.replaceChildren();
+  sec.append(h("p",{class:"lead"},"كل عملاء منار، اللي اشتروه، وحالتهم. حطي تاريخ بداية التعاقد عشان عدد الزيارات المطلوبة يتحسب: مرتين في الشهر أول 3 شهور، وبعدها مرة."));
+  sec.append(h("div",{class:"row lead"},h("span",{class:"tag ok"},"مبسوط"),h("span",{class:"tag warn"},"محايد"),h("span",{class:"tag risk"},"في خطر")));
+  const mk=store.get("monthVisits:"+monthKey,{});
+  const all=[...MKT.map(n=>({n,s:["ديجيتال ماركتنج"].concat(WEB.includes(n)?["موقع"]:[])})),...SOFT.map(([n,x])=>({n,s:[x]}))];
+  const grid=h("div",{class:"clients"});
+  all.forEach(c=>{
+    const v=clients[c.n]||{}; const isClinic=CLINICS.includes(c.n);
+    const put=()=>{ clients[c.n]={...clients[c.n],status:sel.value,notes:ta.value,start:start.value}; store.set("clients",clients); el.className="client"+(sel.value?" s-"+sel.value:""); need.textContent=needTxt(); };
+    const sel=h("select",{"aria-label":"الحالة"},h("option",{value:""},"الحالة"),h("option",{value:"happy"},"مبسوط"),h("option",{value:"neutral"},"محايد"),h("option",{value:"risk"},"في خطر")); sel.value=v.status||"";
+    const start=h("input",{type:"date"}); start.value=v.start||"";
+    const ta=h("textarea",{placeholder:"آخر متابعة، طلبات مفتوحة، ميعاد التصوير الجاي، نتيجة الاستبيان"}); ta.value=v.notes||"";
+    const needN=()=>{ if(!isClinic) return 1; if(!start.value) return 2; const m=(now-new Date(start.value))/(30.4*DAY); return m<3?2:1; };
+    const needTxt=()=> isClinic ? `المطلوب الشهر ده: ${needN()} زيارة` : "متابعة مرة في الشهر بالكتير";
+    const need=h("span",{},needTxt());
+    const cnt=h("b",{},String(mk[c.n]||0));
+    const bump=d=>{ const m=store.get("monthVisits:"+monthKey,{}); m[c.n]=Math.max(0,(m[c.n]||0)+d); store.set("monthVisits:"+monthKey,m); cnt.textContent=m[c.n]; };
+    sel.onchange=put; ta.oninput=put; start.onchange=put;
+    const el=h("div",{class:"client"+(sel.value?" s-"+sel.value:"")},
+      h("h3",{},c.n), h("div",{class:"pills"},c.s.map(x=>h("span",{class:"pill"},x))),
+      h("div",{class:"row"},sel,h("label",{class:"field",style:"flex:1 1 140px"},"بداية التعاقد",start)),
+      h("div",{class:"visits"},h("span",{},isClinic?"زيارات الشهر ده:":"متابعات الشهر ده:"),h("button",{onclick:()=>bump(-1),"aria-label":"أقل"},"−"),cnt,h("button",{onclick:()=>bump(1),"aria-label":"زيادة"},"+"),h("span",{style:"margin-inline-start:auto"},need)),
+      ta);
+    grid.append(el);
+  });
+  sec.append(grid);
+}
+
+/* ---------- Templates ---------- */
+function openTemplate(t){
+  const body=document.getElementById("dlgBody");
+  body.replaceChildren(h("div",{class:"tpl-head"},h("h3",{},t.title),h("button",{class:"copy",onclick:e=>copyText(t.text,e.currentTarget)},"انسخي")),
+    h("pre",{class:"tpl-pre"+(t.code?" code":""),style:"margin:0;white-space:pre-wrap;font:14px/1.7 var(--body);background:var(--surface-2);border-radius:10px;padding:12px;max-height:60vh;overflow:auto"+(t.code?";direction:ltr;text-align:left;font-family:ui-monospace,Menlo,monospace":"")},t.text),
+    h("button",{class:"btn line",onclick:()=>document.getElementById("dlg").close()},"قفل"));
+  const d=document.getElementById("dlg"); d.showModal ? d.showModal() : d.setAttribute("open","");
+}
+function renderTemplates(){
+  const sec=document.getElementById("templates"); sec.replaceChildren();
+  sec.append(h("p",{class:"lead"},"كل القوالب والرسايل والشيتات. اضغطي \"انسخي\" وابعتي على طول."));
+  const cats=["الكل",...new Set(TEMPLATES.map(t=>t.cat))]; let cur=store.get("tplCat","الكل"); if(!cats.includes(cur)) cur="الكل";
+  const search=h("input",{type:"search",placeholder:"دوري على قالب..."});
+  const filt=h("div",{class:"filter"}); const grid=h("div",{class:"tpl-grid"});
+  const draw=()=>{
+    filt.replaceChildren(...cats.map(c=>h("button",{"aria-pressed":String(c===cur),onclick:()=>{cur=c;store.set("tplCat",c);draw();}},c)));
+    const q=search.value.trim();
+    grid.replaceChildren(...TEMPLATES.filter(t=>(cur==="الكل"||t.cat===cur)&&(!q||t.title.includes(q)||t.text.includes(q))).map(t=>h("div",{class:"tpl"},
+      h("div",{class:"tpl-head"},h("div",{},h("h3",{},t.title),h("span",{class:"tag",style:"margin-top:4px;display:inline-block"},t.cat)),h("button",{class:"copy",onclick:e=>copyText(t.text,e.currentTarget)},"انسخي")),
+      h("pre",{class:t.code?"code":""},t.text))));
+  };
+  search.oninput=draw;
+  sec.append(h("label",{class:"field",style:"max-width:420px"},search),filt,grid); draw();
+}
+
+/* ---------- KPIs ---------- */
+function renderKpis(){
+  const sec=document.getElementById("kpis"); sec.replaceChildren();
+  const k="kpi:"+monthKey; const s=store.get(k,{});
+  const hit=()=>KPIS.filter((_,i)=>s[i]).length;
+  const tag=h("span",{class:"tag"},"");
+  const upd=()=>{ tag.textContent=`اتحقق ${hit()} من ${KPIS.length} · ${now.toLocaleDateString(LOC,{month:"long"})}`; };
+  sec.append(h("p",{class:"lead"},"الأداء بيتقاس شهريًا. علّمي على كل مؤشر اتحقق الشهر ده، والعلامات بتتحفظ لكل شهر لوحده. الأهداف مقترحة كبداية، وتتعدل بعد أول شهر حسب الأرقام الفعلية."),h("h2",{},"مؤشرات الأداء",tag));
+  const tb=h("tbody");
+  KPIS.forEach((r,i)=>{ const cb=h("input",{type:"checkbox",class:"check","aria-label":r[1]}); cb.checked=!!s[i]; const tr=h("tr",{class:s[i]?"hit":""},h("td",{},cb),h("td",{class:"g"},r[0]),h("td",{style:"font-weight:600"},r[1]),h("td",{},r[2]),h("td",{style:"color:var(--muted)"},r[3]));
+    cb.onchange=()=>{ if(cb.checked) s[i]=new Date().toISOString(); else delete s[i]; store.set(k,s); tr.className=cb.checked?"hit":""; upd(); }; tb.append(tr); });
+  upd();
+  sec.append(h("div",{style:"overflow-x:auto"},h("table",{class:"kpi"},h("thead",{},h("tr",{},h("th",{},"اتحقق"),h("th",{},"المجال"),h("th",{},"المؤشر"),h("th",{},"الهدف"),h("th",{},"طريقة القياس"))),tb)));
+}
+
+/* ---------- History ---------- */
+document.getElementById("histBtn").onclick=()=>{
+  const days=store.keys().filter(k=>k.startsWith("tick:d:")).map(k=>k.slice(7)).sort().reverse().slice(0,30);
+  const total=DAILY.reduce((n,t)=>n+(t.chips?t.chips.length:1),0);
+  const body=document.getElementById("dlgBody");
+  const cells=days.map(d=>{ const s=store.get("tick:d:"+d,{}); const [a,b]=(()=>{ let a=0; DAILY.forEach(t=>{ if(t.chips) t.chips.forEach(c=>{ if(s[t.id+"|"+c]) a++; }); else if(s[t.id]) a++; }); return [a,total]; })(); const pct=Math.round(a/b*100); const dt=new Date(d+"T12:00");
+    return h("div",{class:"hday"+(pct===100?" full":"")},h("b",{},pct+"%"),dt.toLocaleDateString(LOC,{weekday:"short",day:"numeric",month:"numeric"})); });
+  body.replaceChildren(h("h3",{},"سجل الإنجاز اليومي"),h("p",{class:"lead",style:"font-size:14px"},"آخر 30 يوم اتسجل فيهم شغل على الجهاز ده."),days.length?h("div",{class:"history"},cells):h("div",{class:"empty"},"لسه مفيش سجل."),h("button",{class:"btn line",onclick:()=>document.getElementById("dlg").close()},"قفل"));
+  document.getElementById("dlg").showModal();
+};
+document.getElementById("dlg").addEventListener("click",e=>{ if(e.target.id==="dlg") e.target.close(); });
+
+/* ---------- Backup ---------- */
+document.getElementById("exportBtn").onclick=()=>{
+  const data={}; store.keys().forEach(k=>data[k]=store.get(k,null));
+  const blob=new Blob([JSON.stringify({app:"managerboard",v:2,at:new Date().toISOString(),data},null,1)],{type:"application/json"});
+  const a=h("a",{href:URL.createObjectURL(blob),download:`managerboard-backup-${ymd(new Date())}.json`}); document.body.append(a); a.click(); a.remove();
+  toast("النسخة الاحتياطية اتنزلت");
+};
+document.getElementById("importBtn").onclick=()=>document.getElementById("importFile").click();
+document.getElementById("importFile").onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  try{ const j=JSON.parse(await f.text()); if(j.app!=="managerboard"||!j.data) throw 0; if(!confirm("النسخة دي هتستبدل البيانات اللي على الجهاز ده. تكملي؟")) return; Object.entries(j.data).forEach(([k,v])=>store.set(k,v)); location.reload(); }
+  catch(_){ toast("الملف ده مش نسخة احتياطية من البورد"); }
+};
+
+/* ---------- Theme ---------- */
+const themeBtn=document.getElementById("themeBtn");
+const applyTheme=t=>{ if(t) document.documentElement.setAttribute("data-theme",t); else document.documentElement.removeAttribute("data-theme"); };
+applyTheme(store.get("theme",""));
+themeBtn.onclick=()=>{ const dark=matchMedia("(prefers-color-scheme: dark)").matches; const cur=document.documentElement.getAttribute("data-theme")||(dark?"dark":"light"); const next=cur==="dark"?"light":"dark"; applyTheme(next); store.set("theme",next); };
+
+/* ---------- Boot ---------- */
+function renderAll(){ renderDaily(); renderRecurring(); renderMonthly(); renderOnboarding(); renderShoots(); renderClients(); renderTemplates(); renderKpis(); meters(); }
+renderAll();
+const startTab=(location.hash||"").slice(1);
+show(TABS.some(t=>t[0]===startTab)?startTab:store.get("tab","daily"));
+document.getElementById("savedTxt").textContent = store.ok ? "محفوظ على الجهاز" : "مش بيتحفظ";
+// another tab changed the board: reload its data
+window.addEventListener("storage",e=>{ if(e.key&&e.key.startsWith(P)&&!e.key.endsWith("tab")) location.reload(); });
+// keep countdowns fresh, and roll over to a new day at midnight
+setInterval(()=>{ if(ymd(new Date())!==ymd(now)) location.reload(); else { const cur=store.get("tab","daily"); const typing=document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName); if(typing) return; if(cur==="onboarding") renderOnboarding(); if(cur==="shoots") renderShoots(); } },60000);
 </script>
-
 </body>
 </html>
