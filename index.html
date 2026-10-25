@@ -224,7 +224,7 @@ dialog::backdrop{background:rgba(10,12,25,.5);backdrop-filter:blur(2px)}
   <section id="kpis" hidden></section>
 
   <div class="foot">
-    <span>الشيفت من 12 الضهر لـ 9 بالليل. كل علامة بتتحفظ فورًا على الجهاز ده ومش بتضيع مع الـ Refresh أو قفل المتصفح. اليومي بيبدأ من جديد كل يوم، والدوري كل أحد، والشهري أول كل شهر، والقديم بيفضل في السجل.</span>
+    <span>الشيفت من 12 الضهر لـ 9 بالليل. كل علامة بتتحفظ فورًا ومش بتضيع مع الـ Refresh أو قفل المتصفح، وبتتزامن على كل الأجهزة. اليومي بيبدأ من جديد كل يوم، والدوري كل أحد، والشهري أول كل شهر، والقديم بيفضل في السجل.</span>
     <span class="row"><button class="ghost" id="exportBtn">نسخة احتياطية</button><button class="ghost" id="importBtn">استرجاع نسخة</button><input type="file" id="importFile" accept="application/json" hidden></span>
   </div>
 </div>
@@ -238,16 +238,106 @@ const P = "mb2:";
 const store = {
   ok: true,
   get(k, d){ try{ const v = localStorage.getItem(P+k); return v == null ? d : JSON.parse(v); }catch(e){ this.fail(); return d; } },
-  set(k, v){ try{ localStorage.setItem(P+k, JSON.stringify(v)); markSaved(); }catch(e){ this.fail(); } },
-  del(k){ try{ localStorage.removeItem(P+k); markSaved(); }catch(e){} },
+  set(k, v){ const j=JSON.stringify(v); try{ localStorage.setItem(P+k, j); markSaved(); }catch(e){ this.fail(); } sync.push(k, j); },
+  del(k){ try{ localStorage.removeItem(P+k); markSaved(); }catch(e){} sync.push(k, null); },
   keys(){ try{ return Object.keys(localStorage).filter(k => k.startsWith(P)).map(k => k.slice(P.length)); }catch(e){ return []; } },
   fail(){ if(!this.ok) return; this.ok = false; document.getElementById("warn").hidden = false; const s=document.getElementById("saved"); s.classList.add("bad"); document.getElementById("savedTxt").textContent = "مش بيتحفظ"; }
+};
+/* ---------- Cloud sync: Firebase Realtime Database over REST ----------
+   Every saved key is mirrored to <DB_URL>/board/<key> as {v: json, t: time}.
+   Changes from other devices stream in live; offline changes queue and send when back online.
+   Per-device settings (tab, theme, template filter) stay local. */
+const DB_URL = "";
+const LOCAL_ONLY = new Set(["tab","theme","tplCat"]);
+const SYS = "mb2sys:";
+const sync = {
+  on: !!DB_URL, state: "local", fresh: (()=>{ try{ return localStorage.getItem("mb2sys:ts")==null; }catch(e){ return false; } })(), es: null, timer: null, renderTimer: null,
+  sys(k, d){ try{ const v=localStorage.getItem(SYS+k); return v==null?d:JSON.parse(v); }catch(e){ return d; } },
+  setSys(k, v){ try{ localStorage.setItem(SYS+k, JSON.stringify(v)); }catch(e){} },
+  enc: k => encodeURIComponent(k).replace(/\./g,"%2E"),
+  dec: k => decodeURIComponent(k),
+  url(k){ return DB_URL.replace(/\/$/,"") + "/board" + (k ? "/" + this.enc(k) : "") + ".json"; },
+  push(k, j){
+    if(!this.on || LOCAL_ONLY.has(k)) return;
+    const ts=this.sys("ts",{}); ts[k]=Date.now(); this.setSys("ts",ts);
+    const pend=this.sys("pending",{}); pend[k]={v:j, t:ts[k]}; this.setSys("pending",pend);
+    clearTimeout(this.timer); this.timer=setTimeout(()=>this.flush(), 500);
+  },
+  async flush(){
+    if(!this.on) return;
+    const pend=this.sys("pending",{}); const keys=Object.keys(pend); if(!keys.length) return;
+    for(const k of keys){
+      const item=pend[k];
+      try{
+        const r = await fetch(this.url(k), item.v==null ? {method:"DELETE"} : {method:"PUT", body:JSON.stringify(item)});
+        if(!r.ok) throw new Error(r.status);
+        const now=this.sys("pending",{}); if(now[k] && now[k].t===item.t){ delete now[k]; this.setSys("pending",now); }
+      }catch(e){ this.status("offline"); clearTimeout(this.timer); this.timer=setTimeout(()=>this.flush(), 5000); return; }
+    }
+    this.status("live");
+  },
+  apply(k, item, initial){
+    if(LOCAL_ONLY.has(k)) return false;
+    const pend=this.sys("pending",{});
+    if(pend[k]){ if(initial && this.fresh && item){ delete pend[k]; this.setSys("pending",pend); const t0=this.sys("ts",{}); delete t0[k]; this.setSys("ts",t0); } else return false; }
+    const ts=this.sys("ts",{});
+    if(item==null){ if(initial) return false; try{ localStorage.removeItem(P+k); }catch(e){} delete ts[k]; this.setSys("ts",ts); return true; }
+    if(!item || typeof item.v!=="string") return false;
+    if((ts[k]||0) >= item.t){ return false; }
+    try{ localStorage.setItem(P+k, item.v); }catch(e){ return false; }
+    ts[k]=item.t; this.setSys("ts",ts); return true;
+  },
+  start(){
+    if(!this.on || !window.EventSource) return;
+    this.status("connecting");
+    const es=new EventSource(this.url("")); this.es=es;
+    const handle=(ev, initial)=>{
+      let msg; try{ msg=JSON.parse(ev.data); }catch(e){ return; }
+      let changed=false; const path=msg.path||"/";
+      if(path==="/"){
+        const remote=msg.data||{};
+        Object.entries(remote).forEach(([ek,item])=>{ if(this.apply(this.dec(ek),item,true)) changed=true; });
+        if(initial){ this.fresh=false; // first connection: upload anything this device has that the cloud doesn't
+          const have=new Set(Object.keys(remote).map(ek=>this.dec(ek)));
+          const ts=this.sys("ts",{}); const pend=this.sys("pending",{});
+          store.keys().forEach(k=>{ if(LOCAL_ONLY.has(k)||have.has(k)||pend[k]) return; let j=null; try{ j=localStorage.getItem(P+k); }catch(e){} if(j==null) return; ts[k]=ts[k]||Date.now(); pend[k]={v:j,t:ts[k]}; });
+          this.setSys("ts",ts); this.setSys("pending",pend); this.flush();
+        }
+      } else {
+        const k=this.dec(path.split("/")[1]||"");
+        if(k && path.split("/").length===2){ if(this.apply(k,msg.data,false)) changed=true; }
+        else if(k){ // partial update inside a key: re-read the whole key
+          fetch(this.url(k)).then(r=>r.json()).then(item=>{ if(this.apply(k,item,false)) this.rerender(); }).catch(()=>{});
+        }
+      }
+      if(changed) this.rerender();
+    };
+    let first=true;
+    es.addEventListener("put", ev=>{ handle(ev, first); first=false; this.status("live"); this.flush(); });
+    es.addEventListener("patch", ev=>handle(ev,false));
+    es.onopen=()=>this.status("live");
+    es.onerror=()=>this.status("offline");
+    window.addEventListener("online", ()=>this.flush());
+  },
+  rerender(){
+    clearTimeout(this.renderTimer);
+    this.renderTimer=setTimeout(()=>{
+      const a=document.activeElement; if(a && /TEXTAREA|INPUT/.test(a.tagName) && a.type!=="checkbox"){ this.rerender(); return; }
+      if(typeof refreshFromStore==="function") refreshFromStore();
+      toast("اتحدّث من جهاز تاني");
+    }, 300);
+  },
+  status(s){
+    this.state=s; const el=document.getElementById("saved"), t=document.getElementById("savedTxt"); if(!el) return;
+    el.classList.toggle("bad", s==="offline");
+    t.textContent = s==="live" ? "متزامن على كل الأجهزة" : s==="connecting" ? "بيتصل..." : s==="offline" ? "مش متصل · هيتزامن لما النت يرجع" : "محفوظ على الجهاز ده";
+  }
 };
 (function(){ try{ localStorage.setItem(P+"_t","1"); localStorage.removeItem(P+"_t"); }catch(e){ store.fail(); } })();
 try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
 function markSaved(){
   const s = document.getElementById("saved"); if(!s || !store.ok) return;
-  document.getElementById("savedTxt").textContent = "اتحفظ " + fmtTime(new Date());
+  if(!sync.on) document.getElementById("savedTxt").textContent = "اتحفظ " + fmtTime(new Date());
   s.classList.add("pulse"); setTimeout(()=>s.classList.remove("pulse"), 200);
 }
 
@@ -294,7 +384,7 @@ let clients = store.get("clients", null);
 if(!clients){ // carry over status and notes from the old board
   clients = {};
   try{ const old = JSON.parse(localStorage.getItem("amb:clients")||"{}"); for(const [n,v] of Object.entries(old)) clients[n] = {status:v.s||"", notes:v.t||""}; }catch(e){}
-  store.set("clients", clients);
+  if(Object.keys(clients).length) store.set("clients", clients);
 }
 
 /* ---------- Content ---------- */
@@ -888,9 +978,15 @@ function renderAll(){ renderDaily(); renderRecurring(); renderMonthly(); renderO
 renderAll();
 const startTab=(location.hash||"").slice(1);
 show(TABS.some(t=>t[0]===startTab)?startTab:store.get("tab","daily"));
-document.getElementById("savedTxt").textContent = store.ok ? "محفوظ على الجهاز" : "مش بيتحفظ";
+document.getElementById("savedTxt").textContent = store.ok ? "محفوظ على الجهاز ده" : "مش بيتحفظ";
+function refreshFromStore(){
+  [dayKey,weekKey,monthKey].forEach(k=>{ ticks[k]=store.get("tick:"+k,{}); });
+  clients=store.get("clients",{});
+  renderAll(); show(store.get("tab","daily"));
+}
+sync.start();
 // another tab changed the board: reload its data
-window.addEventListener("storage",e=>{ if(e.key&&e.key.startsWith(P)&&!e.key.endsWith("tab")) location.reload(); });
+window.addEventListener("storage",e=>{ if(e.key&&e.key.startsWith(P)&&!e.key.endsWith("tab")) refreshFromStore(); });
 // keep countdowns fresh, and roll over to a new day at midnight
 setInterval(()=>{ if(ymd(new Date())!==ymd(now)) location.reload(); else { const cur=store.get("tab","daily"); const typing=document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName); if(typing) return; if(cur==="onboarding") renderOnboarding(); if(cur==="shoots") renderShoots(); } },60000);
 </script>
