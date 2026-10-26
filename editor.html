@@ -212,7 +212,7 @@ dialog::backdrop{background:rgba(10,12,25,.5);backdrop-filter:blur(2px)}
   <div class="meters">
     <div class="meter" id="mt-day"><div class="ring"><b>0%</b></div><div><span>النهارده</span><small id="mt-day-s"></small></div></div>
     <div class="meter" id="mt-week"><div class="ring"><b>0%</b></div><div><span>الدوري</span><small id="mt-week-s"></small></div></div>
-    <div class="meter" id="mt-month"><div class="ring"><b>0%</b></div><div><span>الشهر</span><small id="mt-month-s"></small></div></div>
+    <div class="meter" id="mt-month"><div class="ring"><b>0%</b></div><div><span>الأسبوعي</span><small id="mt-month-s"></small></div></div>
   </div>
 
   <nav><div class="tabs" role="tablist" id="tabs"></div></nav>
@@ -226,7 +226,7 @@ dialog::backdrop{background:rgba(10,12,25,.5);backdrop-filter:blur(2px)}
   <section id="kpis" hidden></section>
 
   <div class="foot">
-    <span>الشيفت من 12 الضهر لـ 9 بالليل. كل علامة بتتحفظ فورًا وبتتزامن على كل الأجهزة، ومنار بتشوف نفس البورد. اليومي بيبدأ من جديد كل يوم، والدوري كل أحد، والشهري أول كل شهر.</span>
+    <span>الشيفت من 12 الضهر لـ 9 بالليل. كل علامة بتتحفظ فورًا وبتتزامن على كل الأجهزة، ومنار بتشوف نفس البورد. اليومي بيبدأ من جديد كل يوم، والدوري والأسبوعي كل أحد.</span>
     <span class="row"><button class="ghost" id="exportBtn">نسخة احتياطية</button><button class="ghost" id="importBtn">استرجاع نسخة</button><input type="file" id="importFile" accept="application/json" hidden></span>
   </div>
 </div>
@@ -378,14 +378,15 @@ const saveTicks = k => store.set("tick:"+k, ticks[k]);
 
 /* ---------- Clients ---------- */
 const MKT = ["Dr. Mohamed Sobieh","Dr. Husam El Samahy","Dr. Mahmoud Abdel Aal","Dr. Thabt Shoukry","Dr. Rogina Ragy","Dr. Youssef Sarwat","Dr. Andrew Amin","Dr. Haitam El Hatiem"];
+const DEFAULT_QUOTA = {"Dr. Mohamed Sobieh":6,"Dr. Husam El Samahy":9,"Dr. Mahmoud Abdel Aal":9,"Dr. Thabt Shoukry":6,"Dr. Rogina Ragy":6,"Dr. Youssef Sarwat":6,"Dr. Andrew Amin":6,"Dr. Haitam El Hatiem":6};
 const PRODUCTS = ["MazMed","MazWeb","MazERP","MazShop","MazMenu","MazMarketing"];
 const short = n => n;
 
 /* ---------- Content ---------- */
 const DAILY = [
   {id:"d-plan", when:"12:00", title:"مراجعة المطلوب النهارده", note:"افتح تاب الفيديوهات: إيه اللي ديدلاينه النهارده، وإيه اللي رجع بتعديلات، وإيه الفوتيج الجديد. رتّب اليوم بالأولوية: التعديلات الأول، بعدين الأقرب ديدلاين."},
-  {id:"d-manar", when:"12:15", title:"الرد على منار", note:"أي رسالة من منار يترد عليها خلال 15 دقيقة في مواعيد الشغل، ولو محتاج وقت قول هتخلص إمتى."},
-  {id:"d-revisions", when:"12:30", title:"التعديلات المفتوحة", note:"كل ملاحظات منار أو العميل تتنفذ الأول، نقطة نقطة بالتوقيت، والنسخة المعدلة تتبعت خلال 4 ساعات من استلام الملاحظات."},
+  {id:"d-manar", when:"12:15", title:"الرد على منار", note:"أي رسالة من منار يترد عليها خلال 10 دقايق في مواعيد الشغل، ولو محتاج وقت قول هتخلص إمتى."},
+  {id:"d-revisions", when:"12:30", title:"التعديلات المفتوحة", note:"كل ملاحظات منار أو العميل تتنفذ الأول، نقطة نقطة بالتوقيت، والنسخة المعدلة تتبعت خلال ساعتين من استلام الملاحظات."},
   {id:"d-new", when:"طول اليوم", title:"مونتاج الشغل الجديد", note:"من السكريبت المتوافق عليه والـ Shot List (ستايل التصوير) وملاحظات التصوير. أول نسخة من ريلز العملاء خلال 24 ساعة من التصوير."},
   {id:"d-selfreview", when:"قبل أي تسليم", title:"المراجعة الذاتية", note:"اتفرج على الفيديو مرة كاملة على الموبايل بالصوت، وعدّيه على Checklist المراجعة قبل ما تبعته لمنار.", tpl:"t-review"},
   {id:"d-deliver", when:"مع كل تسليم", title:"التسليم لمنار", note:"الفيديو يترفع على الدرايف في 03_Edited-Videos / Drafts بالاسم الصح، واللينك يتبعت لمنار مع رقم النسخة.", tpl:"t-deliver"},
@@ -402,10 +403,9 @@ const RECURRING = [
   {id:"r-backup", title:"باك أب الـ Project files", note:"ملفات المشروع (Premiere / After Effects / CapCut) للفيديوهات النهائية تترفع على الدرايف في Project-Files."}
 ];
 const MONTHLY = [
-  {id:"m-plan", when:"أول الشهر", title:"خطة الريلز مع منار", note:"خد من منار عدد الريلز لكل عميل الشهر ده وحطه في تاب الحصص، ومواعيد التصوير، وأي شغل لـ MAZCODEX أو فيديوهات سيستمات أو حلقات بودكاست متخططة."},
-  {id:"m-mid", when:"منتصف الشهر", title:"مراجعة الحصص", note:"كل عميل اتسلمله نص حصته على الأقل. لو في عميل متأخر بسبب التصوير، بلّغ منار عشان تحدد تصوير.", chips:MKT},
-  {id:"m-close", when:"آخر أسبوع", title:"إقفال الشهر", note:"كل الحصص اتسلمت واتوافق عليها، والنسخ النهائية والـ Project files على الدرايف."},
-  {id:"m-summary", when:"آخر أسبوع", title:"ملخص الشهر", note:"عدد الفيديوهات اللي اتسلمت لكل نوع، وعدد اللي اتوافق عليها من أول مرة، وأكتر ملاحظات اتكررت عشان متتكررش. تاب الحصص فيه الأرقام جاهزة."}
+  {id:"k-plan", when:"أول الأسبوع", title:"خطة الريلز مع منار", note:"خد من منار عدد الريلز لكل عميل (وحطه في تاب الحصص لو اتغير)، ومواعيد التصوير، وأي شغل لـ MAZCODEX أو فيديوهات سيستمات أو حلقات بودكاست متخططة."},
+  {id:"k-close", when:"آخر كل أسبوع", title:"إقفال الأسبوع", note:"كل الحصص اتسلمت واتوافق عليها، والنسخ النهائية والـ Project files على الدرايف.", chips:MKT},
+  {id:"k-summary", when:"آخر كل أسبوع", title:"ملخص الأسبوع", note:"عدد الفيديوهات اللي اتسلمت لكل نوع، وعدد اللي اتوافق عليها من أول مرة، وأكتر ملاحظات اتكررت عشان متتكررش. تاب الحصص فيه الأرقام جاهزة."}
 ];
 
 /* ---------- Templates ---------- */
@@ -427,7 +427,7 @@ const TEMPLATES = [
 موشن بخلفية شفافة: MOV (ProRes 4444) أو WebM`},
   {id:"t-revisions", cat:"المراجعة والتصدير", title:"طريقة التعديلات", text:`1. التسليم لمنار: لينك الدرايف من فولدر Drafts مع اسم الفيديو ورقم النسخة.
 2. منار بتراجع خلال ساعة، وتبعت الملاحظات بالتوقيت: 00:12 — [الملاحظة].
-3. المونتير ينفذ كل نقطة ويبعت النسخة الجديدة (v2) خلال 4 ساعات، ويقول لو في نقطة مش هتنفع وليه.
+3. المونتير ينفذ كل نقطة ويبعت النسخة الجديدة (v2) خلال ساعتين، ويقول لو في نقطة مش هتنفع وليه.
 4. بعد موافقة منار بتبعته للعميل، وأي تعديلات منه بترجع بنفس الطريقة.
 5. بعد موافقة العميل: النسخة FINAL في فولدر Final، والـ Project file في Project-Files.
 
@@ -486,12 +486,12 @@ Podcast_EP03_Clip02_2026-11-15_v1
 - الصوت متظبط بين المايكات، والسكات الطويلة والأخطاء تتشال.
 - من كل حلقة 3 مقاطع قصيرة على الأقل، كل مقطع بـ Hook قوي وكابشنز.
 - الدكتور الضيف يوافق على المعلومات الطبية قبل النشر (عن طريق منار).
-- الحلقة v1 خلال 72 ساعة، والحلقة والمقاطع نهائي خلال 5 أيام.`},
+- الحلقة v1 خلال 24 ساعة، والحلقة والمقاطع نهائي خلال 5 أيام.`},
   {id:"t-clientreel", cat:"قواعد كل نوع", title:"ريلز العملاء", text:`1. استلم الفوتيج من منار يوم التصوير ومعاه السكريبتات والـ Shot List وملاحظات التصوير.
 2. اختار أحسن لقطة لكل جملة من السكريبت، وابدأ بالـ Hook.
 3. ركّب الـ B-roll والكابشنز واللوور ثيرد بالـ Template بتاع العميل.
 4. مراجعة ذاتية بالـ Checklist، وبعدين ابعت v1 لمنار (خلال 24 ساعة من التصوير).
-5. نفّذ ملاحظات منار خلال 4 ساعات، وبعدين ملاحظات العميل لو في.
+5. نفّذ ملاحظات منار خلال ساعتين، وبعدين ملاحظات العميل لو في.
 6. النسخة النهائية (خلال 48 ساعة من التصوير) تترفع باسم FINAL في فولدر Final.`}
 ];
 const TPL = Object.fromEntries(TEMPLATES.map(t=>[t.id,t]));
@@ -499,7 +499,7 @@ const TPL = Object.fromEntries(TEMPLATES.map(t=>[t.id,t]));
 const KPIS = [
   ["المواعيد","أول نسخة من ريلز العملاء","خلال 24 ساعة من التصوير","تاريخ التصوير وتاريخ v1 على الدرايف"],
   ["المواعيد","النهائي بالتعديلات","خلال 48 ساعة من التصوير","تاريخ التصوير وتاريخ FINAL"],
-  ["المواعيد","تنفيذ التعديلات","خلال 4 ساعات من استلام الملاحظات","توقيت الملاحظات وتوقيت النسخة الجديدة"],
+  ["المواعيد","تنفيذ التعديلات","خلال ساعتين من استلام الملاحظات","توقيت الملاحظات وتوقيت النسخة الجديدة"],
   ["المواعيد","حلقة البودكاست والمقاطع","خلال 5 أيام من التصوير","البورد"],
   ["المواعيد","الموشن وفيديوهات السيستم وريلز MAZCODEX","100% في الديدلاين المتفق عليه","البورد"],
   ["الإنتاج","حصة الريلز لكل عميل","100% اتسلمت قبل آخر الشهر","تاب الحصص"],
@@ -508,7 +508,7 @@ const KPIS = [
   ["الجودة","متوسط جولات التعديل","جولة واحدة أو أقل لكل فيديو","أرقام النسخ (v1، v2...)"],
   ["الجودة","أخطاء إملائية أو براند وصلت لمنار","صفر","ملاحظات منار"],
   ["الجودة","فيديوهات اتشالت أو الصوت اتقفل بسبب الحقوق","صفر","المنصات"],
-  ["التواصل","الرد على منار","خلال 15 دقيقة في مواعيد الشغل","الواتساب"],
+  ["التواصل","الرد على منار","خلال 10 دقايق في مواعيد الشغل","الواتساب"],
   ["التواصل","رسالة آخر اليوم","كل يوم شغل","الواتساب"],
   ["الملفات","الالتزام بنظام الملفات والتسمية","100%","مراجعة عشوائية من منار"],
   ["الملفات","الـ Project files والنسخ النهائية على الدرايف","100% لكل فيديو نهائي","الدرايف"],
@@ -559,12 +559,12 @@ function setMeter(id,[a,b],sub){ const pct=b?Math.round(a/b*100):0; const m=docu
 function meters(){
   setMeter("mt-day",countFor(dayKey,DAILY),"{a} من {b}");
   setMeter("mt-week",countFor(weekKey,RECURRING),"{a} من {b} الأسبوع ده");
-  setMeter("mt-month",countFor(monthKey,MONTHLY),"{a} من {b}");
+  setMeter("mt-month",countFor(weekKey,MONTHLY),"{a} من {b} الأسبوع ده");
   updateCounts();
 }
 
 /* ---------- Tabs ---------- */
-const TABS = [["daily","اليومي"],["videos","الفيديوهات"],["quotas","الحصص"],["recurring","الدوري"],["monthly","الشهري"],["templates","القوالب"],["kpis","الـ KPIs"]];
+const TABS = [["daily","اليومي"],["videos","الفيديوهات"],["quotas","الحصص"],["recurring","الدوري"],["monthly","الأسبوعي"],["templates","القوالب"],["kpis","الـ KPIs"]];
 const tabsEl = document.getElementById("tabs");
 TABS.forEach(([id,label]) => tabsEl.append(h("button",{role:"tab","data-tab":id,"aria-selected":"false",onclick:()=>show(id)},label,h("span",{class:"count",id:"c-"+id,hidden:true}))));
 function show(id){ TABS.forEach(([t])=>{ document.getElementById(t).hidden = t!==id; tabsEl.querySelector(`[data-tab="${t}"]`).setAttribute("aria-selected",String(t===id)); }); store.set("tab",id); history.replaceState(null,"","#"+id); }
@@ -583,7 +583,7 @@ function renderDaily(){
   renderList("daily","أول اليوم للترتيب والتعديلات، ونص اليوم للشغل الجديد، وآخره للتسليم والأرشفة. الفيديوهات نفسها بتتابع في تاب الفيديوهات.","روتين النهارده", off?"إجازة":fmtDay(now), dayKey, DAILY);
 }
 function renderRecurring(){ renderList("recurring","تاسكات بتتكرر بانتظام، وتتوزع على الأسبوع حسب ضغط الشغل. بتبدأ من جديد كل يوم أحد.","التاسكات الدورية","أسبوع "+sun.toLocaleDateString(LOC,{day:"numeric",month:"short"}), weekKey, RECURRING); }
-function renderMonthly(){ renderList("monthly","خطة الريلز أول الشهر، ومراجعة الحصص في نصه، والإقفال في آخره.","التاسكات الشهرية", now.toLocaleDateString(LOC,{month:"long",year:"numeric"}), monthKey, MONTHLY); }
+function renderMonthly(){ renderList("monthly","كل عميل ليه حصة ريلز ثابتة، والهدف إنها تخلص قبل آخر الأسبوع. خطة أول الأسبوع، وإقفال وملخص آخره. بتبدأ من جديد كل يوم أحد.","التاسكات الأسبوعية","أسبوع "+sun.toLocaleDateString(LOC,{day:"numeric",month:"short"}), weekKey, MONTHLY); }
 
 /* ---------- Videos ---------- */
 const TYPES = {
@@ -591,7 +591,7 @@ const TYPES = {
   mazcodex:{label:"ريل MAZCODEX",  v1:24*HOUR,  final:null,    startLabel:"ميعاد الطلب"},
   saas:    {label:"فيديو سيستم",    v1:null,     final:null,    startLabel:"ميعاد الطلب"},
   motion:  {label:"موشن جرافيك",    v1:null,     final:null,    startLabel:"ميعاد الطلب"},
-  podcast: {label:"حلقة بودكاست",   v1:72*HOUR,  final:5*DAY,   startLabel:"ميعاد التصوير"}
+  podcast: {label:"حلقة بودكاست",   v1:24*HOUR,  final:5*DAY,   startLabel:"ميعاد التصوير"}
 };
 function stepsFor(v){
   const T=TYPES[v.type], s=T0(v.start), due=v.due?T0(v.due):null;
@@ -601,7 +601,7 @@ function stepsFor(v){
   if(v.type==="motion") L.push({id:"style", title:"Style frame اتوافق عليه", due:s+(v1Due-s)/2, tpl:"t-motion"});
   L.push({id:"self", title:"المراجعة الذاتية بالـ Checklist", due:v1Due, list:true});
   L.push({id:"v1", title:"تسليم v1 لمنار", due:v1Due, tpl:"t-deliver"});
-  L.push({id:"manar", title:"تعديلات منار اتنفذت ووافقت", due:v1Due+5*HOUR});
+  L.push({id:"manar", title:"تعديلات منار اتنفذت ووافقت", due:v1Due+3*HOUR});
   if(v.type==="saas") L.push({id:"tech", title:"المراجعة التقنية من م. مازن", due:finalDue-6*HOUR, tpl:"t-saas"});
   if(v.type==="podcast") L.push({id:"clips", title:"3 مقاطع قصيرة على الأقل من الحلقة", due:finalDue, tpl:"t-podcast"});
   L.push({id:"approve", title: v.type==="client"||v.type==="podcast" ? "موافقة العميل" : "موافقة الإدارة", due:finalDue});
@@ -616,7 +616,7 @@ const thisMonth = now.getFullYear()+"-"+pad(now.getMonth()+1);
 
 function renderVideos(){
   const sec=document.getElementById("videos"); sec.replaceChildren();
-  sec.append(h("p",{class:"lead"},"كل فيديو ليه كارت لوحده من الاستلام لحد FINAL على الدرايف. ريلز العملاء: v1 خلال 24 ساعة والنهائي خلال 48 ساعة من التصوير. البودكاست: v1 خلال 72 ساعة والنهائي خلال 5 أيام. الباقي بالديدلاين المتفق عليه."));
+  sec.append(h("p",{class:"lead"},"كل فيديو ليه كارت لوحده من الاستلام لحد FINAL على الدرايف. ريلز العملاء: v1 خلال 24 ساعة والنهائي خلال 48 ساعة من التصوير. البودكاست: v1 خلال 24 ساعة والنهائي خلال 5 أيام. التعديلات خلال ساعتين. الباقي بالديدلاين المتفق عليه."));
   // form
   const type=h("select",{},Object.entries(TYPES).map(([k,t])=>h("option",{value:k},t.label)));
   const who=h("input",{type:"text",list:"whoList",placeholder:"اسم العميل"});
@@ -698,7 +698,7 @@ function videoCase(v){
 /* ---------- Quotas ---------- */
 function renderQuotas(){
   const sec=document.getElementById("quotas"); sec.replaceChildren();
-  const qk="quota:"+thisMonth; const q=store.get(qk, null) || store.get("quota:last",{});
+  const qk="quota:"+thisMonth; const q=store.get(qk, null) || store.get("quota:last",null) || DEFAULT_QUOTA;
   const vids=store.get("videos",[]).filter(v=>videoMonth(v)===thisMonth);
   const delivered=c=>vids.filter(v=>v.type==="client"&&v.who===c&&v.done.final).length;
   const inProgress=c=>vids.filter(v=>v.type==="client"&&v.who===c&&!v.done.final).length;
